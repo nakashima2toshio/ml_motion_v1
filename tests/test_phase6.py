@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from pipeline.active_learning import select_low_confidence
 from pipeline.claude_vision import (
-    DEFAULT_MODEL,
     build_nl_query_prompt,
     build_review_prompt,
     build_summary_prompt,
@@ -17,8 +16,25 @@ from pipeline.detections import DetectionRecord
 
 
 # ---- Claude プロンプト構築 ----
-def test_default_model_is_opus_48():
-    assert DEFAULT_MODEL == "claude-opus-4-8"
+def test_default_model_fallback_is_opus_48():
+    """ANTHROPIC_MODEL 未設定時の既定モデルが claude-opus-4-8 であること。
+
+    DEFAULT_MODEL は os.getenv("ANTHROPIC_MODEL", "claude-opus-4-8") で環境変数により
+    上書き可能なため、env を外して再読込し「フォールバック既定」を検証する（env 依存にしない）。
+    """
+    import importlib
+    import os
+
+    import pipeline.claude_vision as cv
+
+    original = os.environ.pop("ANTHROPIC_MODEL", None)
+    try:
+        importlib.reload(cv)
+        assert cv.DEFAULT_MODEL == "claude-opus-4-8"
+    finally:
+        if original is not None:
+            os.environ["ANTHROPIC_MODEL"] = original
+        importlib.reload(cv)  # 元の環境ベースの値へ戻す
 
 
 def test_media_type_for():
