@@ -15,6 +15,15 @@ from pipeline.detections import (
     to_csv_bytes,
     to_json_bytes,
 )
+from pipeline.batch import (
+    BatchItemResult,
+    BatchResult,
+    build_manifest,
+    discover_media,
+    filter_media,
+    run_batch,
+)
+from pipeline.benchmark import LatencyStats, benchmark_processor
 from pipeline.camera import (
     LIGHTWEIGHT_MODELS,
     RESOLUTION_PRESETS,
@@ -23,6 +32,7 @@ from pipeline.camera import (
     open_camera,
     recommend_realtime_model,
 )
+from pipeline.export_model import EXPORT_FORMATS, export_model, normalize_format, quantization_label
 from pipeline.dataset import DatasetSpec, build_dataset_yaml, train_val_split
 from pipeline.detector import AVAILABLE_MODELS, SEG_MODELS, Detector
 from pipeline.device import describe_device, get_device
@@ -34,7 +44,14 @@ from pipeline.experiments import (
     tracking_uri,
 )
 from pipeline.realtime import FrameProcessor, FrameResult
-from pipeline.registry import STAGES, normalize_stage, register_model, transition_stage
+from pipeline.registry import (
+    STAGES,
+    download_model,
+    model_uri,
+    normalize_stage,
+    register_model,
+    transition_stage,
+)
 from pipeline.training import TrainConfig, TrainResult, train
 from pipeline.tracking import Tracker
 from pipeline.video import TrackingResult, VideoResult, process_tracking_video, process_video
@@ -83,4 +100,18 @@ __all__ = [
     "TrainConfig",
     "TrainResult",
     "train",
+    "filter_media",
+    "discover_media",
+    "build_manifest",
+    "run_batch",
+    "BatchResult",
+    "BatchItemResult",
+    "LatencyStats",
+    "benchmark_processor",
+    "EXPORT_FORMATS",
+    "normalize_format",
+    "quantization_label",
+    "export_model",
+    "model_uri",
+    "download_model",
 ]
