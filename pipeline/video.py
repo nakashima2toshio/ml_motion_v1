@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 
 from pipeline.detections import DetectionRecord
 from pipeline.detector import Detector
-from pipeline.tracking import Tracker
+from pipeline.realtime import FrameProcessor
 from pipeline.zones import Zone, ZoneAnalyzer
 
 ProgressCallback = Callable[[int, int], None]
@@ -172,7 +172,6 @@ def process_tracking_video(
     ゾーン別の滞留時間・侵入イベントを集計する（ゾーン解析にはトラッキングが必要）。
     """
     import cv2
-    import supervision as sv
 
     cap = cv2.VideoCapture(input_path)
     if not cap.isOpened():
@@ -187,15 +186,11 @@ def process_tracking_video(
     out_fps = max(1.0, src_fps / stride)
     writer = _open_writer(cv2, output_path, out_fps, (width, height))
 
-    box_annotator = sv.BoxAnnotator()
-    label_annotator = sv.LabelAnnotator()
-    mask_annotator = sv.MaskAnnotator() if enable_masks else None
-    trace_annotator = sv.TraceAnnotator(trace_length=trace_length) if enable_tracking else None
-
-    tracker = Tracker() if enable_tracking else None
+    processor = FrameProcessor(
+        detector, enable_masks=enable_masks, enable_tracking=enable_tracking, trace_length=trace_length
+    )
     zones = zones or []
     analyzer = ZoneAnalyzer(zones, fps=src_fps, stride=stride) if zones else None
-    names = detector.names
 
     records: list[DetectionRecord] = []
     frame_idx = 0
@@ -206,59 +201,14 @@ def process_tracking_video(
             if not ok:
                 break
             if frame_idx % stride == 0:
-                result = detector.predict(frame)
-                detections = sv.Detections.from_ultralytics(result)
-                if tracker is not None:
-                    detections = tracker.update(detections)
                 time_sec = frame_idx / src_fps if src_fps else 0.0
-
-                tracker_ids = (
-                    detections.tracker_id
-                    if getattr(detections, "tracker_id", None) is not None
-                    else [None] * len(detections)
-                )
-
-                labels: list[str] = []
-                tracks_for_zone: list[tuple[int, float, float]] = []
-                anchors = (
-                    detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER)
-                    if len(detections) else []
-                )
-                for i in range(len(detections)):
-                    class_id = int(detections.class_id[i])
-                    conf = float(detections.confidence[i])
-                    tid = None if tracker_ids[i] is None else int(tracker_ids[i])
-                    class_name = names.get(class_id, str(class_id))
-                    x1, y1, x2, y2 = (float(v) for v in detections.xyxy[i])
-                    records.append(
-                        DetectionRecord(
-                            frame=frame_idx,
-                            time_sec=round(time_sec, 3),
-                            class_id=class_id,
-                            class_name=class_name,
-                            confidence=round(conf, 4),
-                            x1=round(x1, 1), y1=round(y1, 1), x2=round(x2, 1), y2=round(y2, 1),
-                            tracker_id=tid,
-                        )
-                    )
-                    label = f"{class_name} {conf:.2f}" if tid is None else f"#{tid} {class_name} {conf:.2f}"
-                    labels.append(label)
-                    if tid is not None and len(anchors):
-                        ax, ay = float(anchors[i][0]), float(anchors[i][1])
-                        nx = ax / width if width else 0.0
-                        ny = ay / height if height else 0.0
-                        tracks_for_zone.append((tid, nx, ny))
+                fr = processor.process(frame, frame_idx=frame_idx, time_sec=time_sec)
+                records.extend(fr.records)
 
                 if analyzer is not None:
-                    analyzer.update(frame_idx, round(time_sec, 3), tracks_for_zone)
+                    analyzer.update(frame_idx, round(time_sec, 3), fr.tracks_norm)
 
-                annotated = frame.copy()
-                if mask_annotator is not None:
-                    annotated = mask_annotator.annotate(annotated, detections)
-                annotated = box_annotator.annotate(annotated, detections)
-                if trace_annotator is not None:
-                    annotated = trace_annotator.annotate(annotated, detections)
-                annotated = label_annotator.annotate(annotated, detections, labels=labels)
+                annotated = fr.annotated
                 if zones:
                     _draw_zones(cv2, annotated, zones, width, height)
 

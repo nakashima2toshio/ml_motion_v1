@@ -25,6 +25,11 @@ dev = [
     "ruff>=0.6",
     "pytest>=8.0",
 ]
+# Phase 3: ブラウザカメラ経路（streamlit-webrtc）。Continuity Camera 経路には不要。
+realtime = [
+    "streamlit-webrtc>=0.47",
+    "av>=10",
+]
 
 [tool.ruff]
 line-length = 120

@@ -26,8 +26,9 @@ st.set_page_config(
 )
 
 analyze = st.Page("views/analyze.py", title="解析", icon="🎥", default=True)
+realtime = st.Page("views/realtime.py", title="リアルタイム", icon="📡")
 experiments = st.Page("views/experiments.py", title="実験管理", icon="📊")
 annotation_qa = st.Page("views/annotation_qa.py", title="アノテーションQA", icon="🏷")
 
-pg = st.navigation([analyze, experiments, annotation_qa])
+pg = st.navigation([analyze, realtime, experiments, annotation_qa])
 pg.run()

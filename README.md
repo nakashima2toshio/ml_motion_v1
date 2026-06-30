@@ -98,13 +98,37 @@ pytest tests/ -q     # detections + zones の単体テスト（計 11 件）
 
 > ゾーン定義はサイドバーの JSON で編集（既定例つき）。GUI 描画(streamlit-drawable-canvas)は将来拡張。
 
+## Phase 3（リアルタイム / iPhone・Continuity Camera）
+
+「リアルタイム」ページで iPhone 映像を準リアルタイム検出する。取り込みは 2 経路。
+
+1. **Continuity Camera（OpenCV / 最推奨）**: iPhone を Mac のカメラとして認識させ、カメラ index で取り込む。
+   ローカル実行（Mac 上の `streamlit run`）でのみ動作。
+2. **ブラウザ（streamlit-webrtc / 代替）**: ブラウザのカメラを使う。追加依存が必要。
+
+```bash
+uv pip install -e '.[realtime]'   # ブラウザ経路（streamlit-webrtc, av）を使う場合のみ
+streamlit run app/Home.py          # 「リアルタイム」ページ
+```
+
+- **スループット最適化**: 解像度プリセット（640×360〜1280×720）、フレームスキップ、
+  リアルタイム時の**軽量モデル自動切替**（重いモデル→`yolo11s`）。FPS をライブ表示。
+- 実装: `pipeline/camera.py`（`FpsMeter`・解像度プリセット・モデル切替、**依存ゼロでテスト可能**）、
+  `pipeline/realtime.py`（`FrameProcessor`：1 フレーム処理をバッチ/リアルタイムで共通化）。
+- リファクタ: `video.py` の `process_tracking_video` も `FrameProcessor` を使う形に統一。
+- 完了判定（仕様書 §5）「iPhone 映像で準リアルタイム検出（≥10fps）」に対応（実機計測は M2 Mac で）。
+
+```bash
+pytest tests/ -q     # detections + zones + camera の単体テスト（計 19 件）
+```
+
 ## 以降の Phase
 
 | Phase | ゴール |
 |---|---|
 | ~~P1~~ | ~~検出 MVP（mp4 → YOLO11 → 注釈付き動画/CSV）~~ ✅ 実装済み |
 | ~~P2~~ | ~~セグメンテーション ＋ トラッキング ＋ ゾーン解析~~ ✅ 実装済み |
-| P3 | リアルタイム（iPhone / Continuity Camera） |
+| ~~P3~~ | ~~リアルタイム（iPhone / Continuity Camera）~~ ✅ 実装済み |
 | P4 | 学習・実験管理（Fine-tuning / MLflow / Model Registry） |
 | P5 | 本番化・最適化（バッチ推論 / CoreML・ONNX / 量子化） |
 | P6 | 高度化（Claude による NL 要約・検索・アノテ自動レビュー） |
