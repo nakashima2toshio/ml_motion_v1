@@ -67,8 +67,11 @@ docker-compose -f docker-compose/docker-compose.yml up -d
 mp4 をアップロードして YOLO11 で物体検出し、注釈付き動画と検出結果（CSV/JSON）を出力する。
 
 ```bash
-streamlit run app/Home.py     # 「解析」ページで mp4 をアップロード → ▶ Run 検出
+bash scripts/fetch_sample_videos.sh   # サンプル動画を data/ に取得（任意）
+streamlit run app/Home.py             # 「解析」ページで mp4 をアップロード → ▶ Run 検出
 ```
+
+> 手元に動画が無ければ上のスクリプトで公開サンプルを取得できる（詳細: [`data/README.md`](data/README.md)）。Upload はローカルの任意パスから選択可。
 
 - サイドバー: モデル（yolo11n/s/m）、信頼度しきい値、対象クラス（COCO 代表 / 全クラス）、フレーム間引き。
 - 出力: 注釈付き動画（bbox + ラベル）、クラス別集計、検出テーブル、CSV / JSON ダウンロード。
