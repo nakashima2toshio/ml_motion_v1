@@ -265,3 +265,4 @@ data/datasets/
 
 # ultralytics の既定出力
 runs/
+temp.txt

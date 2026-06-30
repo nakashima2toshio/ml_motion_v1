@@ -5,75 +5,110 @@ rootdir: /Users/nakashima_toshio/PycharmProjects/ml_motion_v1
 configfile: pyproject.toml
 plugins: langsmith-0.4.53, anyio-4.12.0, asyncio-1.3.0, cov-7.0.0
 asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
-collecting ... collected 0 items / 6 errors
+collecting ... collected 89 items
 
-==================================== ERRORS ====================================
-____________________ ERROR collecting tests/test_camera.py _____________________
-ImportError while importing test module '/Users/nakashima_toshio/PycharmProjects/ml_motion_v1/tests/test_camera.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-../../.pyenv/versions/3.12.2/lib/python3.12/importlib/__init__.py:90: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-tests/test_camera.py:5: in <module>
-    from pipeline.camera import (
-E   ModuleNotFoundError: No module named 'pipeline'
-__________________ ERROR collecting tests/test_detections.py ___________________
-ImportError while importing test module '/Users/nakashima_toshio/PycharmProjects/ml_motion_v1/tests/test_detections.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-../../.pyenv/versions/3.12.2/lib/python3.12/importlib/__init__.py:90: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-tests/test_detections.py:9: in <module>
-    from pipeline.detections import (
-E   ModuleNotFoundError: No module named 'pipeline'
-____________________ ERROR collecting tests/test_phase4.py _____________________
-ImportError while importing test module '/Users/nakashima_toshio/PycharmProjects/ml_motion_v1/tests/test_phase4.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-../../.pyenv/versions/3.12.2/lib/python3.12/importlib/__init__.py:90: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-tests/test_phase4.py:8: in <module>
-    from pipeline.dataset import DatasetSpec, build_dataset_yaml, train_val_split
-E   ModuleNotFoundError: No module named 'pipeline'
-____________________ ERROR collecting tests/test_phase5.py _____________________
-ImportError while importing test module '/Users/nakashima_toshio/PycharmProjects/ml_motion_v1/tests/test_phase5.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-../../.pyenv/versions/3.12.2/lib/python3.12/importlib/__init__.py:90: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-tests/test_phase5.py:7: in <module>
-    from pipeline.batch import BatchItemResult, BatchResult, build_manifest, filter_media
-E   ModuleNotFoundError: No module named 'pipeline'
-____________________ ERROR collecting tests/test_phase6.py _____________________
-ImportError while importing test module '/Users/nakashima_toshio/PycharmProjects/ml_motion_v1/tests/test_phase6.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-../../.pyenv/versions/3.12.2/lib/python3.12/importlib/__init__.py:90: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-tests/test_phase6.py:8: in <module>
-    from pipeline.active_learning import select_low_confidence
-E   ModuleNotFoundError: No module named 'pipeline'
-_____________________ ERROR collecting tests/test_zones.py _____________________
-ImportError while importing test module '/Users/nakashima_toshio/PycharmProjects/ml_motion_v1/tests/test_zones.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-../../.pyenv/versions/3.12.2/lib/python3.12/importlib/__init__.py:90: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-tests/test_zones.py:5: in <module>
-    from pipeline.zones import Zone, ZoneAnalyzer, point_in_polygon
-E   ModuleNotFoundError: No module named 'pipeline'
+tests/test_batch_fs.py::test_discover_media_filters_and_sorts PASSED     [  1%]
+tests/test_batch_fs.py::test_discover_media_empty_dir PASSED             [  2%]
+tests/test_batch_fs.py::test_discover_media_nonexistent_dir PASSED       [  3%]
+tests/test_batch_fs.py::test_discover_media_ignores_subdirectories PASSED [  4%]
+tests/test_benchmark_runner.py::test_benchmark_processor_warmup_excluded PASSED [  5%]
+tests/test_benchmark_runner.py::test_benchmark_processor_no_warmup PASSED [  6%]
+tests/test_benchmark_runner.py::test_benchmark_processor_all_warmup PASSED [  7%]
+tests/test_camera.py::test_resolution_presets PASSED                     [  8%]
+tests/test_camera.py::test_is_lightweight PASSED                         [ 10%]
+tests/test_camera.py::test_recommend_realtime_model_keeps_light PASSED   [ 11%]
+tests/test_camera.py::test_recommend_realtime_model_downgrades_heavy PASSED [ 12%]
+tests/test_camera.py::test_fps_meter_empty_and_single PASSED             [ 13%]
+tests/test_camera.py::test_fps_meter_constant_interval PASSED            [ 14%]
+tests/test_camera.py::test_fps_meter_window_eviction PASSED              [ 15%]
+tests/test_camera.py::test_fps_meter_reset PASSED                        [ 16%]
+tests/test_claude_response.py::test_first_text_returns_first_text_block PASSED [ 17%]
+tests/test_claude_response.py::test_first_text_empty_when_no_text_block PASSED [ 19%]
+tests/test_claude_response.py::test_first_text_empty_content PASSED      [ 20%]
+tests/test_constants.py::test_available_models PASSED                    [ 21%]
+tests/test_constants.py::test_seg_models PASSED                          [ 22%]
+tests/test_constants.py::test_lightweight_subset_of_models PASSED        [ 23%]
+tests/test_constants.py::test_media_exts PASSED                          [ 24%]
+tests/test_constants.py::test_export_formats PASSED                      [ 25%]
+tests/test_constants.py::test_resolution_presets PASSED                  [ 26%]
+tests/test_constants.py::test_coco_common_ids PASSED                     [ 28%]
+tests/test_constants.py::test_stages PASSED                              [ 29%]
+tests/test_detections.py::test_coco_common_ids PASSED                    [ 30%]
+tests/test_detections.py::test_to_csv_bytes_roundtrip PASSED             [ 31%]
+tests/test_detections.py::test_to_json_bytes_roundtrip PASSED            [ 32%]
+tests/test_detections.py::test_summarize_counts PASSED                   [ 33%]
+tests/test_detections.py::test_summarize_empty PASSED                    [ 34%]
+tests/test_device.py::test_get_device_returns_valid_value PASSED         [ 35%]
+tests/test_device.py::test_get_device_cpu_without_torch PASSED           [ 37%]
+tests/test_device.py::test_describe_device_keys PASSED                   [ 38%]
+tests/test_device.py::test_describe_device_without_torch PASSED          [ 39%]
+tests/test_device.py::test_describe_device_consistent_with_get_device PASSED [ 40%]
+tests/test_experiments.py::test_tracking_uri_default PASSED              [ 41%]
+tests/test_experiments.py::test_tracking_uri_env_override PASSED         [ 42%]
+tests/test_experiments.py::test_default_experiment PASSED                [ 43%]
+tests/test_experiments.py::test_key_metrics PASSED                       [ 44%]
+tests/test_phase4.py::test_dataset_class_map PASSED                      [ 46%]
+tests/test_phase4.py::test_build_dataset_yaml_parses PASSED              [ 47%]
+tests/test_phase4.py::test_train_val_split_deterministic PASSED          [ 48%]
+tests/test_phase4.py::test_train_val_split_edge_ratios PASSED            [ 49%]
+tests/test_phase4.py::test_format_runs_table PASSED                      [ 50%]
+tests/test_phase4.py::test_format_runs_table_missing_metrics PASSED      [ 51%]
+tests/test_phase4.py::test_best_run_picks_max PASSED                     [ 52%]
+tests/test_phase4.py::test_best_run_empty PASSED                         [ 53%]
+tests/test_phase4.py::test_normalize_stage_aliases PASSED                [ 55%]
+tests/test_phase4.py::test_normalize_stage_invalid PASSED                [ 56%]
+tests/test_phase4.py::test_stages_constant PASSED                        [ 57%]
+tests/test_phase5.py::test_filter_media_extension_and_sort PASSED        [ 58%]
+tests/test_phase5.py::test_filter_media_empty PASSED                     [ 59%]
+tests/test_phase5.py::test_build_manifest_and_aggregates PASSED          [ 60%]
+tests/test_phase5.py::test_percentile_basic PASSED                       [ 61%]
+tests/test_phase5.py::test_percentile_empty_and_single PASSED            [ 62%]
+tests/test_phase5.py::test_latency_stats_summary PASSED                  [ 64%]
+tests/test_phase5.py::test_latency_stats_empty PASSED                    [ 65%]
+tests/test_phase5.py::test_normalize_format_aliases PASSED               [ 66%]
+tests/test_phase5.py::test_normalize_format_invalid PASSED               [ 67%]
+tests/test_phase5.py::test_quantization_label PASSED                     [ 68%]
+tests/test_phase5.py::test_export_formats_constant PASSED                [ 69%]
+tests/test_phase6.py::test_default_model_is_opus_48 FAILED               [ 70%]
+tests/test_phase6.py::test_media_type_for PASSED                         [ 71%]
+tests/test_phase6.py::test_build_summary_prompt_includes_stats PASSED    [ 73%]
+tests/test_phase6.py::test_build_summary_prompt_empty PASSED             [ 74%]
+tests/test_phase6.py::test_build_review_prompt_lists_labels PASSED       [ 75%]
+tests/test_phase6.py::test_build_nl_query_prompt PASSED                  [ 76%]
+tests/test_phase6.py::test_select_low_confidence_filters_and_orders PASSED [ 77%]
+tests/test_phase6.py::test_select_low_confidence_top_k PASSED            [ 78%]
+tests/test_phase6.py::test_select_low_confidence_none_below_threshold PASSED [ 79%]
+tests/test_registry.py::test_model_uri_default_production PASSED         [ 80%]
+tests/test_registry.py::test_model_uri_normalizes_stage PASSED           [ 82%]
+tests/test_registry.py::test_model_uri_invalid_stage_raises PASSED       [ 83%]
+tests/test_registry.py::test_stages_constant PASSED                      [ 84%]
+tests/test_registry.py::test_normalize_stage_roundtrip_through_uri PASSED [ 85%]
+tests/test_results.py::test_frame_result_n_detections PASSED             [ 86%]
+tests/test_results.py::test_frame_result_defaults_empty PASSED           [ 87%]
+tests/test_results.py::test_video_result_duration PASSED                 [ 88%]
+tests/test_results.py::test_video_result_duration_zero_fps PASSED        [ 89%]
+tests/test_results.py::test_tracking_result_defaults PASSED              [ 91%]
+tests/test_results.py::test_train_config_defaults PASSED                 [ 92%]
+tests/test_results.py::test_frame_uncertainty_fields PASSED              [ 93%]
+tests/test_zones.py::test_point_in_polygon_inside_outside PASSED         [ 94%]
+tests/test_zones.py::test_point_in_polygon_degenerate PASSED             [ 95%]
+tests/test_zones.py::test_dwell_accumulation_single_track PASSED         [ 96%]
+tests/test_zones.py::test_intrusion_reentry_counts_twice PASSED          [ 97%]
+tests/test_zones.py::test_max_occupancy_and_per_track PASSED             [ 98%]
+tests/test_zones.py::test_stride_scales_frame_duration PASSED            [100%]
+
+=================================== FAILURES ===================================
+________________________ test_default_model_is_opus_48 _________________________
+
+    def test_default_model_is_opus_48():
+>       assert DEFAULT_MODEL == "claude-opus-4-8"
+E       AssertionError: assert 'claude-opus-4-1-20250805' == 'claude-opus-4-8'
+E         
+E         - claude-opus-4-8
+E         + claude-opus-4-1-20250805
+E         ?               +++++++ ++
+
+tests/test_phase6.py:21: AssertionError
 =========================== short test summary info ============================
-ERROR tests/test_camera.py
-ERROR tests/test_detections.py
-ERROR tests/test_phase4.py
-ERROR tests/test_phase5.py
-ERROR tests/test_phase6.py
-ERROR tests/test_zones.py
-!!!!!!!!!!!!!!!!!!! Interrupted: 6 errors during collection !!!!!!!!!!!!!!!!!!!!
-============================== 6 errors in 0.14s ===============================
+FAILED tests/test_phase6.py::test_default_model_is_opus_48 - AssertionError: ...
+========================= 1 failed, 88 passed in 1.23s =========================
