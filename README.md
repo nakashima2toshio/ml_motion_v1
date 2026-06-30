@@ -58,11 +58,33 @@ docker-compose -f docker-compose/docker-compose.yml up -d
 > 注: MPS は Apple Silicon（M2 Mac）でのみ利用可能。CUDA / CPU 環境ではスクリプトは
 > 選択デバイスで疎通確認のみ行い、Phase 0 の MPS 判定は M2 Mac 上で再実行する。
 
+## Phase 1（検出 MVP / mp4）
+
+mp4 をアップロードして YOLO11 で物体検出し、注釈付き動画と検出結果（CSV/JSON）を出力する。
+
+```bash
+streamlit run app/Home.py     # 「解析」ページで mp4 をアップロード → ▶ Run 検出
+```
+
+- サイドバー: モデル（yolo11n/s/m）、信頼度しきい値、対象クラス（COCO 代表 / 全クラス）、フレーム間引き。
+- 出力: 注釈付き動画（bbox + ラベル）、クラス別集計、検出テーブル、CSV / JSON ダウンロード。
+- 実装: `pipeline/detector.py`（YOLO11 ラッパー）、`pipeline/video.py`（フレーム抽出・描画・書き出し）、
+  `pipeline/detections.py`（レコード・集計・エクスポート、依存ゼロでテスト可能）。
+
+```bash
+# 単体テスト（エクスポート/集計ロジック）
+pytest tests/ -q
+```
+
+> 注: YOLO11 の重み（`yolo11s.pt` 等）は初回 `Detector` 生成時に ultralytics が自動ダウンロードする。
+> 注釈付き動画はコーデック（avc1→mp4v フォールバック）依存でブラウザ再生できない場合があるため、
+> ダウンロードボタンも用意している。
+
 ## 以降の Phase
 
 | Phase | ゴール |
 |---|---|
-| P1 | 検出 MVP（mp4 → YOLO11 → 注釈付き動画/CSV） |
+| ~~P1~~ | ~~検出 MVP（mp4 → YOLO11 → 注釈付き動画/CSV）~~ ✅ 実装済み |
 | P2 | セグメンテーション ＋ トラッキング ＋ ゾーン解析 |
 | P3 | リアルタイム（iPhone / Continuity Camera） |
 | P4 | 学習・実験管理（Fine-tuning / MLflow / Model Registry） |
