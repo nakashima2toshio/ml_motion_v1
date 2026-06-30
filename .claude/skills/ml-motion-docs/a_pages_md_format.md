@@ -1,6 +1,6 @@
 # Streamlit UIページ ドキュメント フォーマット仕様書
 
-**Version 1.2** | 最終更新: 2026-06-11
+**Version 1.3** | 最終更新: 2026-06-30
 
 ---
 
@@ -140,6 +140,7 @@
 ## 概要
 
 `{page_name}.py`は、{ページの目的と機能の説明}。
+（このページは `st.navigation` から選択されると、トップから順に実行されるスクリプトページです。）
 
 ### 主な責務
 
@@ -151,9 +152,9 @@
 
 | 機能 | 説明 |
 |------|------|
-| コレクション選択 | 検索対象コレクションの選択UI |
-| チャット入力 | ユーザー質問の入力インターフェース |
-| 思考プロセス表示 | エージェントの推論過程をリアルタイム表示 |
+| 入力ソース選択 | mp4 / iPhone などの入力切替UI |
+| 解析タスク選択 | セグ / トラッキング / ゾーン解析のチェックボックス |
+| 結果表示 | 検出統計・注釈付き動画・テーブルの表示 |
 ```
 
 ### 2.3 主な責務の記述規則
@@ -163,11 +164,11 @@
 ```markdown
 ### 主な責務
 
-- ユーザーからの質問入力の受付
-- エージェントへのクエリ送信と応答表示
-- 思考プロセスのリアルタイム可視化
-- 会話履歴の管理とセッション状態の維持
-- 検索対象コレクションの選択と設定
+- 解析対象動画(mp4)のアップロード受付
+- 解析タスク（検出 / セグ / 追跡 / ゾーン）と YOLO11 モデルの選択
+- 解析の実行と進捗・注釈付き動画のリアルタイム表示
+- 検出統計・ゾーン解析結果のテーブル表示
+- CSV / JSON / 動画のエクスポート提供
 ```
 
 **記述のポイント**:
@@ -182,10 +183,10 @@
 
 | 機能 | 説明 |
 |------|------|
-| `show_agent_chat_page()` | メインページ表示関数 |
-| サイドバー設定 | モデル選択、コレクション選択、キャッシュ管理 |
-| チャット履歴表示 | 会話履歴のストリーミング表示 |
-| 思考プロセス表示 | エージェント推論のリアルタイム表示 |
+| スクリプト本体 | `st.navigation` 選択時にトップから順に実行されるページ処理 |
+| サイドバー設定 | 入力ソース・タスク・モデル・しきい値・対象クラスの設定 |
+| 解析実行 | `▶ Run 解析` ボタンで `process_tracking_video` を起動 |
+| 結果表示 | 統計メトリクス・注釈付き動画・検出/ゾーンのテーブル表示 |
 ```
 
 ---
@@ -204,25 +205,31 @@ Mermaidフローチャートを使用して画面構成を表現します。
 ```mermaid
 flowchart TB
     subgraph Browser["ブラウザウィンドウ"]
-        subgraph Sidebar["📋 サイドバー (280px固定)"]
-            S1["⚙️ 設定ヘッダー"]
-            S2["モデル選択<br/>[selectbox]"]
-            S3["コレクション選択<br/>[multiselect]"]
-            S4["☑️ ハイブリッド検索"]
-            S5["[🗑️ クリア]"]
-            S6["[🔄 リセット]"]
-            S7["📊 キャッシュ統計"]
+        subgraph Sidebar["📋 サイドバー"]
+            S1["⚙️ 入力ソース<br/>[radio]"]
+            S2["タスク選択<br/>[checkbox×3]"]
+            S3["YOLO11 モデル<br/>[selectbox]"]
+            S4["信頼度しきい値<br/>[slider]"]
+            S5["対象クラス<br/>[multiselect]"]
+            S6["フレーム間引き・軌跡長<br/>[slider]"]
+            S7["ゾーン定義<br/>[text_area]"]
         end
-        subgraph Main["📄 メインエリア (残り幅)"]
-            M1["🤖 タイトル<br/>キャプション"]
-            M2["📊 エキスパンダー<br/>(コレクションデータ表示)"]
-            M3["💬 チャット履歴エリア"]
-            M4["🤔 思考プロセス<br/>(エキスパンダー)"]
-            M5["📝 チャット入力"]
+        subgraph Main["📄 メインエリア (2カラム)"]
+            M1["🎥 タイトル<br/>デバイスmetric"]
+            M2["📤 動画アップロード<br/>[file_uploader]"]
+            M3["[▶ Run 解析]"]
+            M4["🎬 注釈付き動画<br/>[st.video]"]
+            M5["📊 結果ペイン<br/>(metric / dataframe / DL)"]
         end
     end
 
     Sidebar --> Main
+classDef default fill:#000,stroke:#fff,color:#fff
+classDef subgraphStyle fill:#1a1a1a,stroke:#fff,color:#fff
+class S1,S2,S3,S4,S5,S6,S7,M1,M2,M3,M4,M5 default
+style Browser fill:#1a1a1a,stroke:#fff,color:#fff
+style Sidebar fill:#1a1a1a,stroke:#fff,color:#fff
+style Main fill:#1a1a1a,stroke:#fff,color:#fff
 ```
 ```
 
@@ -236,34 +243,41 @@ flowchart TB
 ```mermaid
 flowchart TB
     subgraph Page["page_name.py"]
-        subgraph MainArea["メインエリア"]
+        subgraph MainArea["メインエリア（2カラム）"]
             M1["st.title() - ページタイトル"]
-            M2["st.caption() - サブタイトル"]
-            subgraph Expander1["エキスパンダー: コレクションデータ表示"]
-                E1["st.selectbox() - コレクション選択"]
-                E2["st.dataframe() - データプレビュー"]
+            M2["st.metric()×4 - デバイス情報"]
+            subgraph CenterCol["center カラム"]
+                C1["st.file_uploader() - mp4 入力"]
+                C2["st.button() - ▶ Run 解析"]
+                C3["st.video() - 注釈付き動画"]
+                C4["st.dataframe() - 検出/ゾーン テーブル"]
             end
-            subgraph ChatArea["チャット履歴エリア"]
-                C1["st.chat_message() - 各メッセージ表示"]
+            subgraph RightCol["right カラム（結果ペイン）"]
+                R1["st.metric() - 検出数/ID数/フレーム"]
+                R2["st.dataframe() - クラス別統計"]
+                R3["st.download_button() - CSV/JSON/動画"]
             end
-            subgraph ResponseArea["応答エリア"]
-                R1["st.expander() - 思考プロセス"]
-                R2["st.markdown() - 最終回答"]
-            end
-            M3["st.chat_input() - 入力フィールド"]
         end
         subgraph SidebarArea["サイドバー"]
-            S1["st.header() - 設定ヘッダー"]
-            S2["st.selectbox() - モデル選択"]
-            S3["st.multiselect() - コレクション選択"]
-            S4["st.checkbox() - ハイブリッド検索"]
-            S5["st.button() - クリア/リセット"]
-            S6["st.expander() - キャッシュ統計"]
+            S1["st.radio() - 入力ソース"]
+            S2["st.checkbox() - タスク選択"]
+            S3["st.selectbox() - YOLO11 モデル"]
+            S4["st.slider() - しきい値/間引き/軌跡長"]
+            S5["st.multiselect() - 対象クラス"]
+            S6["st.text_area() - ゾーン定義JSON"]
         end
     end
 
-    M1 --> M2 --> Expander1 --> ChatArea --> ResponseArea --> M3
+    M1 --> M2 --> CenterCol --> RightCol
     S1 --> S2 --> S3 --> S4 --> S5 --> S6
+classDef default fill:#000,stroke:#fff,color:#fff
+classDef subgraphStyle fill:#1a1a1a,stroke:#fff,color:#fff
+class M1,M2,C1,C2,C3,C4,R1,R2,R3,S1,S2,S3,S4,S5,S6 default
+style Page fill:#1a1a1a,stroke:#fff,color:#fff
+style MainArea fill:#1a1a1a,stroke:#fff,color:#fff
+style CenterCol fill:#1a1a1a,stroke:#fff,color:#fff
+style RightCol fill:#1a1a1a,stroke:#fff,color:#fff
+style SidebarArea fill:#1a1a1a,stroke:#fff,color:#fff
 ```
 ```
 
@@ -282,29 +296,33 @@ flowchart TB
 
 | コンポーネント | 種類 | キー | デフォルト値 | 説明 |
 |---------------|------|------|-------------|------|
-| モデル選択 | `st.selectbox` | - | `AgentConfig.MODEL_NAME` | 使用するLLMモデル |
-| コレクション選択 | `st.multiselect` | - | 全コレクション | 検索対象コレクション |
-| ハイブリッド検索 | `st.checkbox` | - | `True` | Sparse+Dense検索の有効化 |
-| 履歴クリア | `st.button` | - | - | 会話履歴のクリア |
-| キャッシュリセット | `st.button` | - | - | キャッシュのクリア |
-| キャッシュ統計 | `st.expander` | - | 折りたたみ | キャッシュ状態の表示 |
+| 入力ソース | `st.radio` | `source` | `mp4` | 入力ソースの切替 |
+| タスク選択 | `st.checkbox`×3 | - | seg=False/track=True/zone=False | 解析タスクの有効化 |
+| YOLO11 モデル | `st.selectbox` | - | 一覧の index=1 | 使用する検出/セグモデル |
+| 信頼度しきい値 | `st.slider` | - | `0.25` | 検出の信頼度カットオフ |
+| 対象クラス | `st.multiselect` | - | COCO代表クラス全選択 | 検出対象クラス |
+| フレーム間引き | `st.slider` | - | `1` | N フレームに1回処理 |
+| 軌跡の長さ | `st.slider` | - | `30` | 追跡軌跡の保持フレーム数 |
+| ゾーン定義 | `st.text_area` | - | `DEFAULT_ZONES` | 正規化座標のゾーンJSON |
 
 #### モデル選択の詳細
 
 ```python
-selected_model = st.selectbox(
-    "使用モデル (Model)",
-    options=GeminiConfig.AVAILABLE_MODELS,
-    index=GeminiConfig.AVAILABLE_MODELS.index(AgentConfig.MODEL_NAME)
+model_list = SEG_MODELS if enable_seg else AVAILABLE_MODELS
+model_name = st.selectbox(
+    "YOLO11 モデル",
+    list(model_list),
+    index=1,
 )
 ```
 
-**オプション一覧**:
+**オプション一覧（例）**:
 
 | モデル名 | 説明 |
 |---------|------|
-| `gemini-2.0-flash` | 高速推論モデル |
-| `gemini-1.5-pro` | 高性能モデル |
+| `yolo11n.pt` | 軽量・高速モデル |
+| `yolo11s.pt` | バランス型モデル |
+| `yolo11n-seg.pt` | セグメンテーション用モデル |
 ```
 
 ### 4.2 メインエリア
@@ -316,10 +334,12 @@ selected_model = st.selectbox(
 |---------------|------|------|
 | タイトル | `st.title` | ページタイトル表示 |
 | キャプション | `st.caption` | サブタイトル・説明 |
-| データプレビュー | `st.expander` + `st.dataframe` | コレクションデータの閲覧 |
-| チャット履歴 | `st.chat_message` | 会話の表示 |
-| 思考プロセス | `st.expander` | エージェント推論の表示 |
-| チャット入力 | `st.chat_input` | ユーザー入力 |
+| デバイス情報 | `st.metric`×4 | Device/torch/MPS/CUDA の表示 |
+| 動画アップロード | `st.file_uploader` | mp4/mov/avi の受付 |
+| 解析実行 | `st.button` | `▶ Run 解析` トリガ |
+| 注釈付き動画 | `st.video` | 解析結果動画の再生 |
+| 結果統計 | `st.metric` + `st.dataframe` | 検出数・クラス別統計の表示 |
+| エクスポート | `st.download_button` | CSV/JSON/動画のDL |
 ```
 
 ### 4.3 エキスパンダー
@@ -329,9 +349,7 @@ selected_model = st.selectbox(
 
 | エキスパンダー名 | 初期状態 | 内容 |
 |-----------------|---------|------|
-| コレクションデータ表示 | 折りたたみ | データフレームによるプレビュー |
-| 思考プロセス | 展開 | ツール呼び出し、結果のリアルタイム表示 |
-| キャッシュ統計 | 折りたたみ | キャッシュヒット状態、統計情報 |
+| （このページではエキスパンダーは使用していません） | - | サイドバーの `st.subheader` でセクション分割 |
 ```
 
 ### 4.4 ダイアログ・モーダル
@@ -355,12 +373,11 @@ selected_model = st.selectbox(
 
 | キー | 型 | 初期値 | 説明 | リセット条件 |
 |-----|-----|-------|------|-------------|
-| `chat_history` | `List[Dict]` | `[]` | 会話履歴 | クリアボタン |
-| `agent_session_id` | `str` | UUID | セッション識別子 | ページリロード |
-| `agent` | `ReActAgent` | `None` | エージェントインスタンス | 設定変更時 |
-| `current_collections` | `List[str]` | `[]` | 選択中コレクション | コレクション変更時 |
-| `current_model` | `str` | - | 選択中モデル | モデル変更時 |
-| `current_hybrid_search` | `bool` | `True` | ハイブリッド検索状態 | チェックボックス変更時 |
+| `p1_result` | `Dict` | 未設定 | 検出のみの解析結果 | 再 Run 時に上書き |
+| `p2_result` | `Dict` | 未設定 | 追跡/ゾーン込みの解析結果 | 再 Run 時に上書き |
+| `source` | `str` | `mp4` | 選択中の入力ソース（`st.radio` key） | ラジオ変更時 |
+| `rt_running` | `bool` | `False` | リアルタイム実行中フラグ（`st.toggle` key・リアルタイムページ） | トグル操作時 |
+| `mlflow_runs` | `Optional[List]` | 未設定 | MLflow run 一覧（実験管理ページ） | 再読み込み時 |
 ```
 
 ### 5.2 状態遷移図
@@ -370,48 +387,44 @@ selected_model = st.selectbox(
 
 ```mermaid
 flowchart TB
-    A["初期状態"] --> B["ページロード"]
+    A["初期状態"] --> B["ページ実行（トップから順次）"]
 
-    subgraph Init["ページロード処理"]
-        B1["chat_history = []"]
-        B2["agent_session_id = uuid.uuid4()"]
-        B3["agent = None"]
+    subgraph Init["スクリプト初期化"]
+        B1["デバイス情報を取得 metric 表示"]
+        B2["サイドバー設定を読み取り"]
+        B3["res = st.session_state.get(p2_result)"]
     end
     B --> Init
 
-    Init --> C{"設定変更検知?<br/>(モデル/コレクション/ハイブリッド)"}
+    Init --> C{"res は存在?"}
 
-    C -->|Yes| D["エージェント再初期化"]
-    subgraph Reinit["再初期化処理"]
-        D1["should_reinitialize = True"]
-        D2["agent = ReActAgent(...)"]
-        D3["current_* 状態を更新"]
+    C -->|No| E["入力待機<br/>(st.info で案内表示)"]
+    C -->|Yes| D["既存結果を表示"]
+    subgraph Show["結果表示処理"]
+        D1["st.video(注釈付き動画)"]
+        D2["st.metric / st.dataframe"]
+        D3["st.download_button(CSV/JSON/動画)"]
     end
-    D --> Reinit
+    D --> Show
 
-    C -->|No| E["ユーザー入力待機"]
-    Reinit --> E
-
-    E --> F["チャット処理"]
-    subgraph Chat["チャット処理"]
-        F1["chat_history.append(user_message)"]
-        F2["agent.execute_turn(prompt)"]
-        F3["chat_history.append(assistant_response)"]
+    E --> F{"▶ Run 解析 押下?"}
+    Show --> F
+    F -->|Yes| G["解析実行"]
+    subgraph Run["解析処理"]
+        G1["process_tracking_video(...)"]
+        G2["st.session_state[p2_result] = {...}"]
+        G3["再実行で結果を反映"]
     end
-    F --> Chat
+    G --> Run
+    Run --> A
 
-    Chat --> G{"クリアボタン?"}
-    G -->|Yes| H["状態リセット"]
-    subgraph Reset["リセット処理"]
-        H1["chat_history = []"]
-        H2["del current_collections"]
-        H3["del current_model"]
-        H4["st.rerun()"]
-    end
-    H --> Reset
-    Reset --> A
-
-    G -->|No| E
+    F -->|No| E
+classDef default fill:#000,stroke:#fff,color:#fff
+classDef subgraphStyle fill:#1a1a1a,stroke:#fff,color:#fff
+class A,B,B1,B2,B3,C,D,D1,D2,D3,E,F,G,G1,G2,G3 default
+style Init fill:#1a1a1a,stroke:#fff,color:#fff
+style Show fill:#1a1a1a,stroke:#fff,color:#fff
+style Run fill:#1a1a1a,stroke:#fff,color:#fff
 ```
 ```
 
@@ -422,12 +435,11 @@ flowchart TB
 
 | 条件 | 対象状態 | 処理 |
 |------|---------|------|
-| ページ初回ロード | 全状態 | デフォルト値で初期化 |
-| モデル変更 | `agent`, `current_model` | エージェント再初期化 |
-| コレクション変更 | `agent`, `current_collections` | エージェント再初期化 |
-| ハイブリッド検索変更 | `agent`, `current_hybrid_search` | エージェント再初期化 |
-| クリアボタン | `chat_history`, `current_*` | 全状態クリア後リロード |
-| キャッシュリセット | キャッシュのみ | `collection_cache.clear()` |
+| ページ初回実行 | `p2_result` 未設定 | `st.info` で入力案内を表示 |
+| ▶ Run 解析 押下 | `p2_result` | `process_tracking_video` 実行後に上書き |
+| 再 Run | `p2_result` | 新しい結果で上書き |
+| 入力ソース変更 | `source` | 次回実行時に反映 |
+| サイドバー設定変更 | （非永続） | 次回実行時の引数に反映 |
 ```
 
 ---
@@ -443,29 +455,37 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    Start(["開始"]) --> A["1. ページアクセス<br/>→ 初期状態で画面表示"]
-    A --> B["2. (オプション) サイドバーで設定変更"]
+    Start(["開始"]) --> A["1. ページアクセス<br/>→ デバイス情報と入力UIを表示"]
+    A --> B["2. サイドバーで設定"]
 
     subgraph Settings["設定項目"]
-        B1["モデル選択"]
-        B2["コレクション選択"]
-        B3["ハイブリッド検索ON/OFF"]
+        B1["入力ソース / タスク選択"]
+        B2["YOLO11 モデル / しきい値"]
+        B3["対象クラス / 間引き / ゾーン"]
     end
     B --> Settings
 
-    Settings --> C["3. 質問入力<br/>→ チャット入力欄に質問を入力してEnter"]
-    C --> D["4. 応答待機"]
+    Settings --> C["3. mp4 アップロード<br/>→ ▶ Run 解析 を押下"]
+    C --> D["4. 解析待機"]
 
-    subgraph Waiting["応答待機中"]
-        D1["思考プロセスがリアルタイム表示"]
-        D2["ツール呼び出し状況を確認可能"]
+    subgraph Waiting["解析実行中"]
+        D1["st.progress で進捗表示"]
+        D2["フレーム処理状況を確認可能"]
     end
     D --> Waiting
 
-    Waiting --> E["5. 応答確認<br/>→ 最終回答がチャット履歴に追加"]
-    E --> F{"継続して質問?"}
-    F -->|Yes| C
-    F -->|No| End(["終了 or 会話クリア"])
+    Waiting --> E["5. 結果確認<br/>→ 注釈付き動画・統計・テーブル表示"]
+    E --> F{"エクスポートする?"}
+    F -->|Yes| G["CSV/JSON/動画をDL"]
+    F -->|No| H{"再解析?"}
+    G --> H
+    H -->|Yes| C
+    H -->|No| End(["終了"])
+classDef default fill:#000,stroke:#fff,color:#fff
+classDef subgraphStyle fill:#1a1a1a,stroke:#fff,color:#fff
+class Start,A,B,B1,B2,B3,C,D,D1,D2,E,F,G,H,End default
+style Settings fill:#1a1a1a,stroke:#fff,color:#fff
+style Waiting fill:#1a1a1a,stroke:#fff,color:#fff
 ```
 ```
 
@@ -475,22 +495,27 @@ flowchart TB
 ### 4.2 操作シーケンス図
 
 ```mermaid
+%%{ init: { "theme": "base", "themeVariables": {
+  "background": "#000000", "mainBkg": "#000000",
+  "textColor": "#ffffff", "lineColor": "#ffffff",
+  "actorBkg": "#000000", "actorTextColor": "#ffffff",
+  "actorLineColor": "#ffffff", "noteBkgColor": "#000000",
+  "noteTextColor": "#ffffff", "noteBorderColor": "#ffffff" } } }%%
 sequenceDiagram
-    participant User as User
-    participant UI as UI
-    participant Agent as Agent
-    participant Qdrant as Qdrant
+    participant User as "User"
+    participant UI as "UI (analyze.py)"
+    participant Pipe as "process_tracking_video"
+    participant Det as "Detector (YOLO11)"
 
-    User->>UI: 1. 質問入力
-    UI->>Agent: 2. execute_turn()
-    Agent-->>UI: 3. log (思考プロセス)
-    UI-->>User: 4. 思考表示
-    Agent->>Qdrant: 5. RAG検索
-    Qdrant-->>Agent: 6. 検索結果
-    Agent-->>UI: 7. tool_result
-    UI-->>User: 8. 結果表示
-    Agent-->>UI: 9. final_answer
-    UI-->>User: 10. 最終回答表示
+    User->>UI: 1. mp4 アップロード＋Run
+    UI->>Pipe: 2. process_tracking_video(...)
+    Pipe->>Det: 3. フレームごとに推論
+    Det-->>Pipe: 4. 検出/追跡結果
+    Pipe-->>UI: 5. progress_cb で進捗通知
+    UI-->>User: 6. st.progress 更新
+    Pipe-->>UI: 7. TrackingResult 返却
+    UI-->>User: 8. 注釈付き動画・統計表示
+    Note over UI,User: CSV/JSON/動画は download_button で取得
 ```
 ```
 
@@ -501,18 +526,21 @@ sequenceDiagram
 ```markdown
 ## 5. 関数一覧表
 
-### 5.1 メイン関数
+### 5.1 メイン処理（スクリプト本体）
 
-| 関数名 | 概要 |
+| 名称 | 概要 |
 |-------|------|
-| `show_agent_chat_page()` | ページ全体のレンダリングと制御 |
+| スクリプト本体 | `st.navigation` 選択時にトップから順に実行されるページ処理 |
+| `load_detector()` | `@st.cache_resource` で Detector を生成・キャッシュ |
+| `parse_zones()` | ゾーン定義JSONを `Zone` のリストへ変換 |
 
 ### 5.2 ヘルパー関数（インポート）
 
 | 関数名 | モジュール | 概要 |
 |-------|-----------|------|
-| `get_available_collections_from_qdrant_helper()` | `services.agent_service` | Qdrantコレクション一覧取得 |
-| `ReActAgent` | `services.agent_service` | エージェントクラス |
+| `process_tracking_video()` | `pipeline.video` | 動画の検出・追跡・ゾーン解析処理 |
+| `Detector` | `pipeline.detector` | YOLO11 検出器クラス |
+| `summarize_session()` | `pipeline.claude_vision` | Claude による NL 要約生成 |
 ```
 
 ---
@@ -524,18 +552,18 @@ sequenceDiagram
 ```markdown
 ## 6. 関数 IPO詳細
 
-### 6.1 `show_agent_chat_page`
+### 6.1 スクリプト本体（解析ページ）
 
-**概要**: エージェントチャットページのメイン表示関数。サイドバー設定、チャット履歴、ユーザー入力処理を統合管理する。
+**概要**: `st.navigation` から選択されるとトップから順に実行されるスクリプト。サイドバー設定の描画、動画アップロード、解析実行、結果表示を一連の流れで処理する。
 
 ```python
-def show_agent_chat_page() -> None
+# views/analyze.py（モジュールトップレベルで実行）
 ```
 
 | 項目 | 内容 |
 |------|------|
-| **Input** | なし（セッション状態から取得） |
-| **Process** | 1. サイドバー設定UIの描画<br>2. セッション状態の初期化・更新チェック<br>3. エージェントの初期化（必要時）<br>4. チャット履歴の表示<br>5. ユーザー入力の処理<br>6. エージェント応答のストリーミング表示 |
+| **Input** | なし（サイドバーUIとアップロードファイルから取得） |
+| **Process** | 1. デバイス情報の metric 表示<br>2. サイドバー設定UIの描画<br>3. mp4 アップロードと `▶ Run 解析` ボタン<br>4. 解析実行（`process_tracking_video`）<br>5. 結果を `p2_result` に保存<br>6. 注釈付き動画・統計・テーブルの表示 |
 | **Output** | なし（画面描画のみ） |
 
 **主要処理フロー**:
@@ -543,28 +571,25 @@ def show_agent_chat_page() -> None
 ```python
 # 1. サイドバー設定
 with st.sidebar:
-    selected_model = st.selectbox(...)
-    selected_collections = st.multiselect(...)
-    use_hybrid_search = st.checkbox(...)
+    st.radio("ソース", ["mp4", ...], key="source")
+    enable_track = st.checkbox("トラッキング（ByteTrack / ID付与）", value=True)
+    model_name = st.selectbox("YOLO11 モデル", list(model_list), index=1)
+    conf = st.slider("信頼度しきい値", 0.0, 1.0, 0.25, 0.05)
 
-# 2. セッション状態初期化
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+# 2. アップロードと実行ボタン
+uploaded = st.file_uploader("mp4 をアップロード", type=["mp4", "mov", "avi"])
+run = st.button("▶ Run 解析", type="primary", disabled=uploaded is None)
 
-# 3. エージェント初期化（設定変更時）
-if should_reinitialize:
-    st.session_state.agent = ReActAgent(...)
+# 3. 解析実行
+if run and uploaded is not None:
+    detector = load_detector(model_name, str(info["device"]), conf, class_ids)
+    result = process_tracking_video(str(in_path), str(out_path), detector, ...)
+    st.session_state["p2_result"] = {"records": result.records, ...}
 
-# 4. チャット履歴表示
-for message in st.session_state.chat_history:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# 5. ユーザー入力処理
-if prompt := st.chat_input("質問を入力してください..."):
-    # 6. エージェント応答処理
-    for event in st.session_state.agent.execute_turn(prompt):
-        # イベントタイプに応じた表示処理
+# 4. 結果表示
+res = st.session_state.get("p2_result")
+if res and Path(res["output_path"]).exists():
+    st.video(res["output_path"])
 ```
 ```
 
@@ -573,17 +598,17 @@ if prompt := st.chat_input("質問を入力してください..."):
 （外部モジュールの関数の場合、簡略化した記述）
 
 ```markdown
-### 6.2 `get_available_collections_from_qdrant_helper`
+### 6.2 `process_tracking_video`
 
-**概要**: Qdrantから利用可能なコレクション一覧を取得する。
+**概要**: 動画を読み込み、YOLO11 検出・追跡・ゾーン解析を行い、注釈付き動画と結果を返す。
 
-**参照**: `services/agent_service.py`
+**参照**: `pipeline/video.py`
 
 | 項目 | 内容 |
 |------|------|
-| **Input** | なし |
-| **Process** | Qdrantクライアントでコレクション一覧を取得 |
-| **Output** | `List[str]`: コレクション名のリスト |
+| **Input** | 入力/出力パス, `Detector`, タスクフラグ, ゾーン, フレーム間引き, 軌跡長, 進捗コールバック |
+| **Process** | フレーム抽出 → 検出/追跡 → ゾーン集計 → 注釈付き動画書き出し |
+| **Output** | `TrackingResult`（records, output_path, frames_processed, zone_summary 等） |
 ```
 
 ### 8.3 コールバック関数の記述形式
@@ -591,23 +616,29 @@ if prompt := st.chat_input("質問を入力してください..."):
 ```markdown
 ### 6.3 イベント処理コールバック
 
-#### チャット入力コールバック
+#### 進捗コールバック（`progress_cb`）
 
 ```python
-if prompt := st.chat_input("質問を入力してください..."):
-    # ユーザーメッセージを履歴に追加
-    st.session_state.chat_history.append({"role": "user", "content": prompt})
+progress = st.progress(0.0, text="解析中…")
 
-    # エージェント応答処理
-    for event in st.session_state.agent.execute_turn(prompt):
-        if event["type"] == "log":
-            # 思考ログ表示
-        elif event["type"] == "tool_call":
-            # ツール呼び出し表示
-        elif event["type"] == "tool_result":
-            # ツール結果表示
-        elif event["type"] == "final_answer":
-            # 最終回答表示
+def _cb(cur: int, total: int) -> None:
+    # フレーム処理の進捗を st.progress に反映
+    progress.progress(min(1.0, cur / total), text=f"解析中… {cur}/{total} フレーム")
+
+result = process_tracking_video(..., progress_cb=_cb)
+progress.empty()
+```
+
+#### NL要約ボタンコールバック
+
+```python
+if st.button("📝 NL要約（Claude）"):
+    try:
+        with st.spinner("Claude が要約中…"):
+            summary = summarize_session(stats, res.get("zone_summary") or {})
+        st.markdown(summary)
+    except Exception as e:
+        st.error(f"要約に失敗しました: {e}（`ANTHROPIC_API_KEY` を確認）")
 ```
 ```
 
@@ -623,23 +654,23 @@ if prompt := st.chat_input("質問を入力してください..."):
 | ライブラリ | バージョン | 用途 |
 |-----------|-----------|------|
 | `streamlit` | >= 1.28 | UIフレームワーク |
-| `pandas` | >= 2.0 | データフレーム表示 |
-| `qdrant-client` | >= 1.6 | Qdrant接続 |
+| `ultralytics` | YOLO11 | 物体検出・セグ・追跡 |
+| `supervision` | - | 注釈描画・追跡ユーティリティ |
 
 ### 7.2 内部モジュール
 
 | モジュール | 用途 |
 |-----------|------|
-| `config.AgentConfig` | エージェント設定 |
-| `config.GeminiConfig` | Geminiモデル設定 |
+| `pipeline.detector` | `Detector` / `AVAILABLE_MODELS` / `SEG_MODELS` |
+| `pipeline.detections` | 集計・CSV/JSON 変換 |
 
-### 7.3 サービス層
+### 7.3 パイプライン層
 
-| サービス | 用途 |
+| 関数・クラス | 用途 |
 |---------|------|
-| `services.agent_service.ReActAgent` | エージェント処理 |
-| `services.agent_service.get_available_collections_from_qdrant_helper` | コレクション取得 |
-| `agent_cache.collection_cache` | キャッシュ管理 |
+| `pipeline.video.process_tracking_video` | 検出・追跡・ゾーン解析の中核処理 |
+| `pipeline.zones.Zone` | ゾーン定義（正規化ポリゴン） |
+| `pipeline.claude_vision.summarize_session` | Claude `claude-opus-4-8` による NL 要約 |
 ```
 
 ---
@@ -653,26 +684,27 @@ if prompt := st.chat_input("質問を入力してください..."):
 
 | ボタン | イベント | 処理内容 |
 |-------|---------|---------|
-| 🗑️ 会話履歴をクリア | クリック | `chat_history`クリア、状態リセット、`st.rerun()` |
-| 🔄 キャッシュをリセット | クリック | `collection_cache.clear(session_id)` |
+| ▶ Run 解析 | クリック | `process_tracking_video` 実行、`p2_result` 更新 |
+| ⬇ CSV/JSON/動画 | クリック | エクスポートデータをダウンロード |
+| 📝 NL要約（Claude） | クリック | `summarize_session` を `st.spinner` 付きで実行 |
 
 ### 8.2 入力イベント
 
 | コンポーネント | イベント | 処理内容 |
 |---------------|---------|---------|
-| モデル選択 | 変更 | `should_reinitialize = True` |
-| コレクション選択 | 変更 | `should_reinitialize = True` |
-| ハイブリッド検索 | 変更 | `should_reinitialize = True` |
-| チャット入力 | Enter | エージェント処理開始 |
+| 入力ソース（radio） | 変更 | 次回実行時の入力経路に反映 |
+| タスク（checkbox） | 変更 | モデル一覧・引数を切替 |
+| しきい値（slider） | 変更 | 検出 conf に反映 |
+| 動画アップロード | ファイル選択 | Run ボタンを有効化 |
 
 ### 8.3 リアルタイム更新
 
 | イベント種別 | 更新内容 |
 |-------------|---------|
-| `log` | 思考プロセスエキスパンダーに追記 |
-| `tool_call` | ツール呼び出し情報を表示、スピナー表示 |
-| `tool_result` | ツール結果を表示 |
-| `final_answer` | 最終回答をマークダウン表示 |
+| `progress_cb` | `st.progress` の進捗バーを更新 |
+| 解析完了 | `p2_result` を保存し再実行で結果反映 |
+| `st.video` | 注釈付き動画を再生表示 |
+| `st.dataframe` | 検出統計・ゾーン解析テーブルを更新 |
 ```
 
 ---
@@ -686,10 +718,11 @@ if prompt := st.chat_input("質問を入力してください..."):
 
 | エラー種別 | 発生条件 | 対処 |
 |-----------|---------|------|
-| Qdrant接続エラー | サーバー未起動 | `st.warning`で警告表示 |
-| エージェント初期化エラー | API認証失敗等 | `st.error`でエラー表示、処理中断 |
-| チャット処理エラー | API呼び出し失敗 | `st.error`でエラー表示、ログ出力 |
-| コレクション取得エラー | Qdrantエラー | 空リストで続行、警告表示 |
+| 対象クラス未選択 | クラス未選択かつ全クラス無効 | `st.warning` で警告、`st.stop()` |
+| ゾーンJSON解析エラー | ゾーン定義の JSON が不正 | `st.error` で表示、`st.stop()` |
+| モデル読み込みエラー | 重み未取得・MPS/CUDA問題等 | `st.error` で表示、`st.stop()` |
+| 動画処理エラー | デコード失敗・処理例外 | `st.error` で表示、`st.stop()` |
+| 要約エラー | `ANTHROPIC_API_KEY` 未設定等 | `st.error` で表示、キー確認を案内 |
 
 ### 9.2 エラー表示
 
@@ -704,12 +737,12 @@ if prompt := st.chat_input("質問を入力してください..."):
 
 ```python
 try:
-    for event in st.session_state.agent.execute_turn(prompt):
-        # イベント処理
-        ...
+    result = process_tracking_video(str(in_path), str(out_path), detector, ...)
 except Exception as e:
-    st.error(f"エラーが発生しました: {e}")
-    logger.error(f"Chat Error: {e}", exc_info=True)
+    st.error(f"動画処理に失敗しました: {e}")
+    st.stop()
+finally:
+    progress.empty()
 ```
 ```
 
@@ -722,26 +755,26 @@ except Exception as e:
 
 ### 10.1 基本的な使用方法
 
-1. ページにアクセス
+1. `st.navigation` から「解析」ページを選択
 2. サイドバーで必要に応じて設定を変更
-   - 使用モデルの選択
-   - 検索対象コレクションの選択
-   - ハイブリッド検索の有効/無効
-3. チャット入力欄に質問を入力してEnter
-4. 思考プロセスを確認しながら応答を待機
-5. 最終回答を確認
-6. 必要に応じて追加の質問を続ける
+   - 入力ソース・解析タスクの選択
+   - YOLO11 モデル・信頼度しきい値の設定
+   - 対象クラス・フレーム間引き・ゾーン定義
+3. mp4 をアップロードして `▶ Run 解析` を押下
+4. `st.progress` で進捗を確認しながら待機
+5. 注釈付き動画・検出統計・テーブルを確認
+6. 必要に応じて CSV/JSON/動画をエクスポート
 
 ### 10.2 画面スクリーンショット
 
 （実際のドキュメントでは、スクリーンショット画像を挿入）
 
-### 10.3 典型的な質問例
+### 10.3 典型的な利用例
 
 ```
-- 「〇〇について教えてください」
-- 「△△と□□の違いは何ですか？」
-- 「××の手順を説明してください」
+- 人物のみを検出・追跡して滞留時間を集計する
+- セグメンテーションで車両の領域を可視化する
+- ゾーンを定義して侵入回数・最大同時数を計測する
 ```
 ```
 
@@ -755,9 +788,16 @@ except Exception as e:
 | バージョン | 日付 | 変更内容 |
 |-----------|------|---------|
 | 1.0 | YYYY-MM-DD | 初版作成 |
-| 1.1 | YYYY-MM-DD | ハイブリッド検索機能追加 |
-| 1.2 | YYYY-MM-DD | キャッシュ統計表示追加 |
+| 1.1 | YYYY-MM-DD | ゾーン解析機能追加 |
+| 1.2 | YYYY-MM-DD | NL要約（Claude）追加 |
 ```
+
+### 本仕様書の変更履歴
+
+| バージョン | 日付 | 変更内容 |
+|-----------|------|---------|
+| 1.2 | 2026-06-11 | キャッシュ統計表示の記述追加 |
+| 1.3 | 2026-06-30 | 具体例を ml_motion_v1（Streamlit app/views）に差し替え |
 
 ---
 
