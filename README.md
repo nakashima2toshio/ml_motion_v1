@@ -47,6 +47,10 @@ streamlit run app/Home.py
 docker-compose -f docker-compose/docker-compose.yml up -d
 ```
 
+> 別アプリでも `docker-compose/` を使っていてプロジェクト名やポート 5000 が衝突する場合は、
+> 仕様書 [§10 docker-compose の名前/ポート衝突対策](docs/ml_motion_detection_spec.md) を参照
+> （本リポジトリは `name: ml_motion_v1` 固定・`MLFLOW_PORT` で可変）。
+
 ### Phase 0 完了判定
 
 | 項目 | 確認方法 |
