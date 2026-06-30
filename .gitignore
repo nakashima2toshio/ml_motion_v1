@@ -265,3 +265,10 @@ data/datasets/
 
 # ultralytics の既定出力
 runs/
+
+# data/raw/（download_test_videos.py の取得先）配下の動画も除外（README/.gitkeep は保持）
+data/raw/
+data/**/*.mp4
+data/**/*.mov
+data/**/*.avi
+data/**/*.mkv
