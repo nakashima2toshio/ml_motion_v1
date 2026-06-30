@@ -35,6 +35,12 @@ realtime = [
 line-length = 120
 target-version = "py312"
 
+[tool.pytest.ini_options]
+# リポジトリルートを import パスに載せ、editable インストール有無に関わらず
+# `pipeline` パッケージを解決できるようにする（`uv run pytest` で No module named 'pipeline' を回避）。
+pythonpath = ["."]
+testpaths = ["tests"]
+
 [tool.setuptools]
 # トップレベルの推論パッケージのみを配布対象にする。
 packages = ["pipeline"]
