@@ -23,7 +23,16 @@ from pipeline.batch import (
     filter_media,
     run_batch,
 )
+from pipeline.active_learning import FrameUncertainty, select_low_confidence
 from pipeline.benchmark import LatencyStats, benchmark_processor
+from pipeline.claude_vision import (
+    DEFAULT_MODEL,
+    build_review_prompt,
+    build_summary_prompt,
+    nl_query_frames,
+    review_annotation,
+    summarize_session,
+)
 from pipeline.camera import (
     LIGHTWEIGHT_MODELS,
     RESOLUTION_PRESETS,
@@ -114,4 +123,12 @@ __all__ = [
     "export_model",
     "model_uri",
     "download_model",
+    "DEFAULT_MODEL",
+    "build_summary_prompt",
+    "build_review_prompt",
+    "summarize_session",
+    "review_annotation",
+    "nl_query_frames",
+    "select_low_confidence",
+    "FrameUncertainty",
 ]

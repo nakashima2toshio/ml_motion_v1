@@ -12,6 +12,7 @@ from pathlib import Path
 
 import streamlit as st
 
+from pipeline.claude_vision import summarize_session
 from pipeline.detections import COCO_COMMON, summarize, to_csv_bytes, to_json_bytes
 from pipeline.detector import AVAILABLE_MODELS, SEG_MODELS, Detector
 from pipeline.device import describe_device
@@ -194,7 +195,13 @@ with right:
                 "⬇ 注釈付き動画", data=Path(res["output_path"]).read_bytes(),
                 file_name=f"{res['stem']}_annotated.mp4", mime="video/mp4",
             )
-        st.button("📝 NL要約（Claude）— P6", disabled=True)
+        if st.button("📝 NL要約（Claude）"):
+            try:
+                with st.spinner("Claude が要約中…"):
+                    summary = summarize_session(stats, res.get("zone_summary") or {})
+                st.markdown(summary)
+            except Exception as e:  # noqa: BLE001
+                st.error(f"要約に失敗しました: {e}（`ANTHROPIC_API_KEY` を確認）")
 
 # ----- ゾーン解析・検出テーブル -----
 if res:
