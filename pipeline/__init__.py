@@ -2,6 +2,7 @@
 
 Phase 0: デバイス選択ユーティリティ。
 Phase 1: YOLO11 検出器・mp4 処理・検出レコード/エクスポート。
+Phase 2: セグメンテーション・ByteTrack トラッキング・ゾーン解析。
 
 重い依存（torch/cv2/ultralytics/supervision）はいずれも関数・メソッド内で
 遅延 import するため、本パッケージの import 自体はそれらが未導入でも成功する。
@@ -14,20 +15,30 @@ from pipeline.detections import (
     to_csv_bytes,
     to_json_bytes,
 )
-from pipeline.detector import AVAILABLE_MODELS, Detector
+from pipeline.detector import AVAILABLE_MODELS, SEG_MODELS, Detector
 from pipeline.device import describe_device, get_device
-from pipeline.video import VideoResult, process_video
+from pipeline.tracking import Tracker
+from pipeline.video import TrackingResult, VideoResult, process_tracking_video, process_video
+from pipeline.zones import IntrusionEvent, Zone, ZoneAnalyzer, point_in_polygon
 
 __all__ = [
     "get_device",
     "describe_device",
     "Detector",
     "AVAILABLE_MODELS",
+    "SEG_MODELS",
     "DetectionRecord",
     "COCO_COMMON",
     "summarize",
     "to_csv_bytes",
     "to_json_bytes",
     "process_video",
+    "process_tracking_video",
     "VideoResult",
+    "TrackingResult",
+    "Tracker",
+    "Zone",
+    "ZoneAnalyzer",
+    "IntrusionEvent",
+    "point_in_polygon",
 ]

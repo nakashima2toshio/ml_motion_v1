@@ -23,6 +23,7 @@ COCO_COMMON: dict[str, int] = {
 }
 
 # エクスポートの列順（CSV ヘッダ／DataFrame 列）。
+# tracker_id は Phase 2（トラッキング）で付与。検出のみ(P1)では None。
 FIELDS: tuple[str, ...] = (
     "frame",
     "time_sec",
@@ -33,12 +34,13 @@ FIELDS: tuple[str, ...] = (
     "y1",
     "x2",
     "y2",
+    "tracker_id",
 )
 
 
 @dataclass
 class DetectionRecord:
-    """1 フレーム中の 1 検出ボックス。"""
+    """1 フレーム中の 1 検出ボックス。tracker_id は P2 で付与（P1 では None）。"""
 
     frame: int
     time_sec: float
@@ -49,6 +51,7 @@ class DetectionRecord:
     y1: float
     x2: float
     y2: float
+    tracker_id: int | None = None
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
