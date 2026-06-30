@@ -7,9 +7,12 @@
 
 ## サンプル動画の取得（その1: 公開リポジトリ）
 
-```bash
-bash scripts/fetch_sample_videos.sh
+```zsh
+./scripts/fetch_sample_videos.sh
 ```
+
+> zsh（macOS 既定シェル）でそのまま実行できる（スクリプトのシバンで bash が起動される）。
+> 実行権限が外れている場合は `chmod +x scripts/fetch_sample_videos.sh` の後に実行する。
 
 `data/` に以下が保存される（取得元: [intel-iot-devkit/sample-videos](https://github.com/intel-iot-devkit/sample-videos)、物体検出デモで広く使われる公開リポジトリ）。
 
@@ -26,7 +29,7 @@ bash scripts/fetch_sample_videos.sh
 依存ライブラリ `supervision`（Roboflow）同梱の公式アセットを `data/raw/` に取得する。
 YOLO11 → ByteTrack → supervision ゾーン解析（カウント/滞留/侵入）のデモにそのまま使える。
 
-```bash
+```zsh
 # 推奨セット（車両 VEHICLES + 歩行者 PEOPLE_WALKING）を data/raw/ に取得
 python scripts/download_test_videos.py
 
