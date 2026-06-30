@@ -286,3 +286,108 @@ class P0,P1,P2,P3,P4,P5,P6 default
 | アノテーション品質ばらつき | Claude Vision でのダブルチェック、ガイドライン整備、IoU 監査 |
 | モデル差し替え時の再現性低下 | MLflow Registry でバージョン固定、データセットも versioning |
 | SAM2 等の重量モデルのメモリ圧迫 | FastSAM/MobileSAM へ切替、バッチサイズ調整 |
+
+---
+
+## 9. 各 Phase の使い方（実行コマンド / 入力 / 出力）
+
+### 9.0 共通の前提（初回セットアップ）
+
+```bash
+git pull
+uv venv --python 3.12 && source .venv/bin/activate && uv pip install -e .
+cp .env.example .env          # ANTHROPIC_API_KEY を設定（Phase 6 で使用）
+```
+
+UI 系はすべて `streamlit run app/Home.py` で起動し、左ナビの
+**解析 / リアルタイム / 実験管理 / 本番・最適化 / アノテーションQA** から各 Phase を使う。
+
+### 9.1 Phase 0 基盤構築
+
+| 項目 | 内容 |
+|---|---|
+| 実行コマンド | `python scripts/check_mps.py` / `python main.py` / `docker-compose -f docker-compose/docker-compose.yml up -d` / `streamlit run app/Home.py` |
+| 入力データ | なし（環境確認のみ） |
+| 期待する出力・表示 | `check_mps.py` → `MPS available : True` と `✅ Phase 0 完了判定: ... == True` ／ MLflow UI が `http://localhost:5000` で開く ／ Streamlit が起動し5ページのナビが出る |
+
+### 9.2 Phase 1 検出MVP（mp4）
+
+| 項目 | 内容 |
+|---|---|
+| 実行コマンド | `streamlit run app/Home.py` →「解析」ページ |
+| 入力データ | mp4/mov/avi 動画。サイドバーで モデル(yolo11n/s/m)・信頼度しきい値・対象クラス・フレーム間引き を設定 → 「▶ Run 検出」 |
+| 期待する出力・表示 | 注釈付き動画（bbox＋クラス名＋信頼度）／クラス別集計（延べ・最大同時）／検出テーブル（frame, time_sec, class, conf, bbox）／CSV・JSON・注釈付き動画のDLボタン。初回は `yolo11s.pt` を自動DL |
+
+### 9.3 Phase 2 セグメンテーション＋トラッキング＋ゾーン解析
+
+| 項目 | 内容 |
+|---|---|
+| 実行コマンド | 同「解析」ページ。サイドバー「タスク」で セグメンテーション／トラッキング／ゾーン解析 を有効化 |
+| 入力データ | mp4 動画＋（ゾーン解析時）正規化座標(0〜1)の多角形JSON。既定例 `[{"name":"ゾーンA","polygon":[[0.3,0.3],[0.7,0.3],[0.7,0.9],[0.3,0.9]]}]` |
+| 期待する出力・表示 | マスク描画／ID付き軌跡（例 `#3 person 0.92`）／ゾーン枠描画／ゾーン解析テーブル（通過ID数・侵入回数・最大同時・合計/最大滞留秒）／ID別滞留テーブル／「ユニークID数」メトリクス。CSV/JSON に `tracker_id` 列追加 |
+
+### 9.4 Phase 3 リアルタイム（iPhone / Continuity Camera）
+
+| 項目 | 内容 |
+|---|---|
+| 実行コマンド | `streamlit run app/Home.py` →「リアルタイム」ページ（ローカル実行のみ）。ブラウザ経路は `uv pip install -e '.[realtime]'` |
+| 入力データ | iPhone映像。経路① Continuity Camera（カメラindex指定）／経路② ブラウザ(streamlit-webrtc)。サイドバーで 解像度・フレームスキップ・モデル・軽量自動切替 |
+| 期待する出力・表示 | ライブ注釈映像（検出＋追跡）／FPS表示・検出数・frame番号／重いモデル選択時は `⚡ 自動切替: yolo11m → yolo11s`。目標 ≥10fps |
+
+### 9.5 Phase 4 学習・実験管理（MLflow / Model Registry）
+
+| 項目 | 内容 |
+|---|---|
+| 実行コマンド | `docker-compose -f docker-compose/docker-compose.yml up -d`（MLflow起動）→「実験管理」ページ |
+| 入力データ | 学習: `data.yaml`（YOLO形式。ページ下「data.yaml生成」で雛形作成可）＋画像/ラベル。ベースモデル・epochs を指定し「▶ 学習を開始」。Run比較: 「🔄 MLflowから取得」 |
+| 期待する出力・表示 | Run一覧テーブル（run名/status/mAP50/mAP50-95）／最良Run強調／学習完了で `run_id`＋メトリクスJSON／MLflow UI にハイパラ・メトリクス・成果物(best.pt)記録、Registry でステージ管理 |
+
+### 9.6 Phase 5 本番化・最適化（バッチ / 変換・量子化 / 計測）
+
+| 項目 | 内容 |
+|---|---|
+| 実行コマンド | 「本番・最適化」ページ |
+| 入力データ | バッチ: 入力ディレクトリ（mp4複数）＋出力ディレクトリ＋モデル/信頼度/間引き。変換: 重みパス＋書式(onnx/coreml/torchscript/engine)＋量子化(FP32/FP16/INT8)。Registry取得: モデル名＋ステージ |
+| 期待する出力・表示 | バッチ: マニフェスト表（input/output/frames/detections/status）＋成功/失敗/総検出数、`output_batch/` に注釈付き動画／変換: 出力パス（例 `yolo11s.onnx`）／計測: `LatencyStats`(mean/p50/p95/fps) を変換前後で比較／Registry URI（`models:/ml_motion_detector/Production`）表示 |
+
+### 9.7 Phase 6 高度化（Claude Vision）
+
+| 項目 | 内容 |
+|---|---|
+| 実行コマンド | `.env` に `ANTHROPIC_API_KEY` 設定後、「解析」ページの「📝 NL要約」／「アノテーションQA」ページ |
+| 入力データ | NL要約: P1/P2 の検出・ゾーン結果（自動）。レビュー: フレーム画像＋提案ラベル（カンマ区切り）。NL検索: クエリ（例「赤い服の人」）＋フレーム要約一覧（`nl_query_frames` をコードから） |
+| 期待する出力・表示 | 自然言語サマリ（例「過去のセッションで3人がゾーンAに侵入…」）／アノテレビュー（各ラベルの妥当・要修正＋理由）／NL検索→該当フレーム番号の配列（構造化出力）／`select_low_confidence` で低確信フレーム抽出。モデルは `claude-opus-4-8` |
+
+### 9.8 テスト（全 Phase 共通の検証）
+
+```bash
+pytest tests/ -q
+```
+
+依存ゼロのロジック層（検出エクスポート・ゾーン集計・FPS/モデル切替・データセット・
+バッチ/書式・レイテンシ・Claudeプロンプト・Active Learning）が緑になる。
+
+---
+
+## 10. docker-compose の名前/ポート衝突対策
+
+別アプリでも `docker-compose -f docker-compose/docker-compose.yml` を使っている場合、
+**Compose はディレクトリ名（`docker-compose`）を既定のプロジェクト名に採用する**ため、
+両アプリのプロジェクト名が一致してコンテナ/ネットワーク/ボリューム/ポートが衝突する。
+
+本リポジトリでは以下で回避している（`docker-compose/docker-compose.yml`）。
+
+- **プロジェクト名を固定**: top-level `name: ml_motion_v1`。
+  - 旧 `docker-compose` v1 は `name:` 非対応。その場合は
+    `docker-compose -p ml_motion_v1 -f docker-compose/docker-compose.yml up -d`
+    または環境変数 `COMPOSE_PROJECT_NAME=ml_motion_v1` を使う。
+- **コンテナ名を固有化**: `container_name: ml_motion_v1_mlflow`。
+- **ホストポートを可変化**: `ports: "${MLFLOW_PORT:-5000}:5000"`。別アプリが 5000 使用中なら
+  `.env` に `MLFLOW_PORT=5001` を設定し、`MLFLOW_TRACKING_URI` も `http://localhost:5001` に更新。
+
+```bash
+# 例: ポートを 5001 に変えて起動
+echo "MLFLOW_PORT=5001" >> .env
+docker-compose -f docker-compose/docker-compose.yml up -d
+# UI: http://localhost:5001
+```
