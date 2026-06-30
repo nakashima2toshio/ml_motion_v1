@@ -23,9 +23,19 @@ from pipeline.camera import (
     open_camera,
     recommend_realtime_model,
 )
+from pipeline.dataset import DatasetSpec, build_dataset_yaml, train_val_split
 from pipeline.detector import AVAILABLE_MODELS, SEG_MODELS, Detector
 from pipeline.device import describe_device, get_device
+from pipeline.experiments import (
+    DEFAULT_EXPERIMENT,
+    best_run,
+    format_runs_table,
+    list_runs,
+    tracking_uri,
+)
 from pipeline.realtime import FrameProcessor, FrameResult
+from pipeline.registry import STAGES, normalize_stage, register_model, transition_stage
+from pipeline.training import TrainConfig, TrainResult, train
 from pipeline.tracking import Tracker
 from pipeline.video import TrackingResult, VideoResult, process_tracking_video, process_video
 from pipeline.zones import IntrusionEvent, Zone, ZoneAnalyzer, point_in_polygon
@@ -58,4 +68,19 @@ __all__ = [
     "is_lightweight",
     "recommend_realtime_model",
     "open_camera",
+    "DatasetSpec",
+    "build_dataset_yaml",
+    "train_val_split",
+    "DEFAULT_EXPERIMENT",
+    "tracking_uri",
+    "list_runs",
+    "format_runs_table",
+    "best_run",
+    "STAGES",
+    "normalize_stage",
+    "register_model",
+    "transition_stage",
+    "TrainConfig",
+    "TrainResult",
+    "train",
 ]
