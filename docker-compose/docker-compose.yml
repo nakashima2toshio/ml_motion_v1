@@ -9,7 +9,7 @@
 # 本格運用で PostgreSQL/MinIO が必要になったら Phase 4/5 でサービスを追加する。
 services:
   mlflow:
-    image: python:3.11-slim
+    image: python:3.12-slim
     container_name: ml_motion_mlflow
     working_dir: /mlflow
     ports:

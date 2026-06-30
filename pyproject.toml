@@ -2,7 +2,7 @@
 name = "ml-motion-v1"
 version = "0.1.0"
 description = "Video ML Analytics Studio — 動画ML解析プラットフォーム（検出/セグメンテーション/トラッキング/ゾーン解析 + Claude Vision）"
-requires-python = ">=3.11"
+requires-python = ">=3.12,<3.13"
 
 # Phase 0（基盤構築）で必要な最小依存セット。
 # 重い学習依存（W&B 等）は Phase 4 以降で追加する。
@@ -28,7 +28,7 @@ dev = [
 
 [tool.ruff]
 line-length = 120
-target-version = "py311"
+target-version = "py312"
 
 [tool.setuptools]
 # トップレベルの推論パッケージのみを配布対象にする。

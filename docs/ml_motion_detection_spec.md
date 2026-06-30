@@ -17,7 +17,7 @@
 |---|---|
 | マシン | MacBook Air M2 / 24GB ユニファイドメモリ |
 | IDE | PyCharm Pro |
-| 言語/ランタイム | Python 3.11 |
+| 言語/ランタイム | Python 3.12 |
 | ML フレームワーク | PyTorch（**MPS** バックエンド） |
 | UI | Streamlit |
 | 基盤 | Docker Compose |
@@ -64,7 +64,7 @@
 | 12 | 推論最適化 | CoreML/ONNX 変換, 量子化, MPS 最適化 | GPU 最適化 |
 
 ### 技術スタック
-- **言語/UI**: Python 3.11, Streamlit
+- **言語/UI**: Python 3.12, Streamlit
 - **ML**: PyTorch (MPS), ultralytics(YOLO11), SAM2/FastSAM, supervision（可視化/ゾーン）, ByteTrack
 - **実験/レジストリ**: MLflow（Docker Compose）, Weights & Biases
 - **LLM/VLM**: Anthropic Claude API（Vision・要約・アノテ補助）
@@ -207,7 +207,7 @@ class P0,P1,P2,P3,P4,P5,P6 default
 ### 各 Phase の詳細 TODO
 
 #### P0 基盤構築
-- [ ] Python 3.11 仮想環境（uv/venv）と PyCharm Pro プロジェクト設定
+- [ ] Python 3.12 仮想環境（uv/venv）と PyCharm Pro プロジェクト設定
 - [ ] `torch` + MPS 動作確認スクリプト（`mps.is_available()` / 簡単なテンソル演算）
 - [ ] `ultralytics`, `supervision`, `streamlit`, `opencv-python`, `anthropic` 導入
 - [ ] Streamlit マルチページ雛形（解析 / 実験管理 / アノテQA）

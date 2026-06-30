@@ -3,7 +3,7 @@
 動画ML解析プラットフォーム。mp4 / iPhone リアルタイム映像 → 物体検出・セグメンテーション・トラッキング → ゾーン解析 → Claude Vision による要約・アノテーション補助。MLflow で実験管理し、Fine-tuning したモデルをバージョン管理して本番推論パイプラインへ載せる。
 
 - 設計の全体像・開発計画は [`docs/ml_motion_detection_spec.md`](docs/ml_motion_detection_spec.md) を参照。
-- 対象: MacBook Air M2（MPS バックエンド）/ Python 3.11 / PyCharm Pro。
+- 対象: MacBook Air M2（MPS バックエンド）/ Python 3.12 / PyCharm Pro。
 
 ## Phase 0（基盤構築）
 
@@ -28,8 +28,8 @@ ml_motion_v1/
 ### セットアップ
 
 ```bash
-# 1. Python 3.11 環境を用意して依存をインストール（uv 推奨）
-uv venv --python 3.11
+# 1. Python 3.12 環境を用意して依存をインストール（uv 推奨）
+uv venv --python 3.12
 uv pip install -e .
 # もしくは: pip install -e .
 
