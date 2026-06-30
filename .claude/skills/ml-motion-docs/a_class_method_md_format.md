@@ -1,6 +1,6 @@
 # Pythonモジュール ドキュメント フォーマット仕様書
 
-**Version 1.5** | 最終更新: 2026-06-11
+**Version 1.6** | 最終更新: 2026-06-30
 
 ---
 
@@ -187,11 +187,11 @@
 ```markdown
 ### 主な責務
 
-- ユーザークエリの複雑度推定
-- LLMを用いた実行計画の自動生成
-- 利用可能なコレクション（Qdrant）の取得
-- フィードバックに基づく計画の修正（リファインメント）
-- フォールバック計画の提供
+- 検出器・トラッカー・アノテーターの保持と初期化
+- 1 フレーム単位での検出（＋任意でセグ・ByteTrack 追跡）
+- supervision の各アノテーターによる注釈描画
+- 検出レコード（DetectionRecord）の生成
+- 新規ストリーム開始時のトラッカー状態リセット
 ```
 
 **記述のポイント**:
@@ -208,11 +208,11 @@
 
 | # | 責務 | 対応モジュール | 説明 |
 |---|------|--------------|------|
-| 1 | ユーザークエリの複雑度推定 | `planner.py` | キーワード/LLMベースの複雑度分析 |
-| 2 | LLMを用いた実行計画の自動生成 | `planner.py` | Gemini APIで検索計画を生成 |
-| 3 | 利用可能なコレクションの取得 | `qdrant_client_wrapper.py` | Qdrantから動的にコレクション一覧を取得 |
-| 4 | フィードバックに基づく計画の修正 | `planner.py` | 検索結果のスコアに応じてリファインメント |
-| 5 | フォールバック計画の提供 | `planner.py` | LLMエラー時の安全な代替計画 |
+| 1 | 検出器・トラッカー・アノテーターの保持 | `realtime.py` | FrameProcessor が supervision の各要素を初期化 |
+| 2 | 1 フレーム単位の検出 | `detector.py` | Detector が ultralytics YOLO11 で推論 |
+| 3 | アノテーターによる注釈描画 | `realtime.py` | BoxAnnotator/LabelAnnotator/TraceAnnotator で描画 |
+| 4 | 検出レコードの生成 | `detections.py` | DetectionRecord に座標・クラス・追跡IDを格納 |
+| 5 | トラッカー状態のリセット | `tracking.py` | Tracker（supervision ByteTrack）の状態を初期化 |
 ```
 
 **記述のポイント**:
@@ -230,13 +230,13 @@
 
 | 機能 | 説明 |
 |------|------|
-| `Planner` | 計画生成エージェントクラス |
-| `Planner.__init__()` | コンストラクタ（設定・モデル名指定） |
-| `Planner.create_plan()` | LLMを使用して実行計画を生成 |
-| `Planner.estimate_complexity()` | キーワードベースで複雑度を推定 |
-| `Planner.estimate_complexity_with_llm()` | LLMで複雑度を推定 |
-| `Planner.refine_plan()` | フィードバックに基づき計画を修正 |
-| `create_planner()` | Plannerインスタンスを作成するファクトリ関数 |
+| `FrameProcessor` | 1 フレーム処理器クラス |
+| `FrameProcessor.__init__()` | コンストラクタ（検出器・追跡/セグ有無を指定） |
+| `FrameProcessor.process()` | 1 フレームを検出・追跡・注釈描画 |
+| `FrameProcessor.reset()` | トラッカー状態をリセット |
+| `FrameResult` | 1 フレームの処理結果データクラス |
+| `FrameResult.n_detections` | 検出件数を返すプロパティ |
+| `Detector.predict()` | 1 フレームを YOLO11 で推論 |
 ```
 
 **記述のポイント**:
@@ -287,34 +287,40 @@ flowchart TB
 ```
 ```
 
-**具体例（Plannerモジュール）**:
+**具体例（realtime モジュール）**:
 
 ```mermaid
 flowchart TB
     subgraph CLIENT["クライアント層"]
-        AGENT[Executor Agent]
-        API[API Endpoints]
-        CLI[CLI Tools]
+        ANALYZE[解析ページ]
+        REALTIME[リアルタイムページ]
+        VIDEO[video.py バッチ処理]
     end
 
-    subgraph MODULE["planner.py"]
-        PLANNER[Planner Class]
-        FACTORY[create_planner]
+    subgraph MODULE["realtime.py"]
+        PROCESSOR[FrameProcessor]
+        RESULT[FrameResult]
     end
 
     subgraph EXTERNAL["外部サービス層"]
-        LLM[Gemini API]
-        QDRANT[Qdrant Vector DB]
-        CONFIG[Config Service]
+        TORCH[PyTorch MPS]
+        YOLO[ultralytics YOLO11]
+        SV[supervision]
     end
 
-    AGENT --> PLANNER
-    API --> PLANNER
-    CLI --> FACTORY
-    FACTORY --> PLANNER
-    PLANNER --> LLM
-    PLANNER --> QDRANT
-    PLANNER --> CONFIG
+    ANALYZE --> PROCESSOR
+    REALTIME --> PROCESSOR
+    VIDEO --> PROCESSOR
+    PROCESSOR --> RESULT
+    PROCESSOR --> TORCH
+    PROCESSOR --> YOLO
+    PROCESSOR --> SV
+classDef default fill:#000,stroke:#fff,color:#fff
+classDef subgraphStyle fill:#1a1a1a,stroke:#fff,color:#fff
+class ANALYZE,REALTIME,VIDEO,PROCESSOR,RESULT,TORCH,YOLO,SV default
+style CLIENT fill:#1a1a1a,stroke:#fff,color:#fff
+style MODULE fill:#1a1a1a,stroke:#fff,color:#fff
+style EXTERNAL fill:#1a1a1a,stroke:#fff,color:#fff
 ```
 
 ### 3.2 データフロー
@@ -376,37 +382,43 @@ flowchart LR
 ```
 ```
 
-**具体例（Plannerモジュール）**:
+**具体例（realtime モジュール）**:
 
 ```mermaid
 flowchart TB
-    subgraph CONST["定数・設定"]
-        PROMPT[PLAN_PROMPT_TEMPLATE]
-        KEYWORDS[COMPLEXITY_KEYWORDS]
+    subgraph RESULT_CLS["FrameResult データクラス"]
+        ANNOTATED[annotated]
+        RECORDS[records]
+        TRACKS[tracks_norm]
+        NDET["n_detections"]
     end
 
-    subgraph PLANNER["Planner クラス"]
+    subgraph PROCESSOR["FrameProcessor クラス"]
         INIT["__init__()"]
-        CREATE["create_plan()"]
-        EST["estimate_complexity()"]
-        EST_LLM["estimate_complexity_with_llm()"]
-        REFINE["refine_plan()"]
-        GET_COLL["_get_available_collections()"]
-        FALLBACK["_create_fallback_plan()"]
+        PROCESS["process()"]
+        RESET["reset()"]
     end
 
-    subgraph FACTORY["ファクトリ関数"]
-        CREATE_P["create_planner()"]
+    subgraph DEPS["保持する依存"]
+        DETECTOR[Detector]
+        TRACKER[Tracker]
+        ANNOTATORS[supervision Annotators]
     end
 
-    CONST --> PLANNER
-    CREATE_P --> INIT
-    INIT --> CREATE
-    CREATE --> EST
-    CREATE --> EST_LLM
-    CREATE --> GET_COLL
-    CREATE --> FALLBACK
-    CREATE --> REFINE
+    INIT --> DETECTOR
+    INIT --> TRACKER
+    INIT --> ANNOTATORS
+    PROCESS --> DETECTOR
+    PROCESS --> TRACKER
+    PROCESS --> ANNOTATORS
+    PROCESS --> RESULT_CLS
+    RESET --> TRACKER
+classDef default fill:#000,stroke:#fff,color:#fff
+classDef subgraphStyle fill:#1a1a1a,stroke:#fff,color:#fff
+class ANNOTATED,RECORDS,TRACKS,NDET,INIT,PROCESS,RESET,DETECTOR,TRACKER,ANNOTATORS default
+style RESULT_CLS fill:#1a1a1a,stroke:#fff,color:#fff
+style PROCESSOR fill:#1a1a1a,stroke:#fff,color:#fff
+style DEPS fill:#1a1a1a,stroke:#fff,color:#fff
 ```
 
 ### 4.2 依存関係テーブル
@@ -926,35 +938,43 @@ flowchart LR
     EXT1 --> E1C[module.Class]
     EXT1 --> E1F[module.function]
     EXT2 --> E2C[submodule.Class]
-    INT1 --> I1F[helper_function]
+    INT1 --> I1F[internal_function]
 ```
 ```
 
-**具体例（Plannerモジュール）**:
+**具体例（realtime モジュール）**:
 
 ```mermaid
 flowchart LR
-    PLANNER[planner.py]
+    REALTIME[realtime.py]
 
-    subgraph GOOGLE["google-genai"]
-        GENAI[genai.Client]
-        TYPES[genai.types]
+    subgraph SUPERVISION["supervision"]
+        ANNOT[BoxAnnotator/LabelAnnotator]
+        DETS[sv.Detections]
     end
 
-    subgraph QDRANT["qdrant-client"]
-        QC[QdrantClient]
+    subgraph ULTRALYTICS["ultralytics"]
+        YOLO[YOLO11 Results]
     end
 
     subgraph INTERNAL["内部モジュール"]
-        CONFIG[services.config_service]
-        QDRANT_SVC[services.qdrant_service]
+        DETECTOR[pipeline.detector.Detector]
+        TRACKER[pipeline.tracking.Tracker]
+        RECORD[pipeline.detections.DetectionRecord]
     end
 
-    PLANNER --> GENAI
-    PLANNER --> TYPES
-    PLANNER --> QC
-    PLANNER --> CONFIG
-    PLANNER --> QDRANT_SVC
+    REALTIME --> ANNOT
+    REALTIME --> DETS
+    REALTIME --> YOLO
+    REALTIME --> DETECTOR
+    REALTIME --> TRACKER
+    REALTIME --> RECORD
+classDef default fill:#000,stroke:#fff,color:#fff
+classDef subgraphStyle fill:#1a1a1a,stroke:#fff,color:#fff
+class REALTIME,ANNOT,DETS,YOLO,DETECTOR,TRACKER,RECORD default
+style SUPERVISION fill:#1a1a1a,stroke:#fff,color:#fff
+style ULTRALYTICS fill:#1a1a1a,stroke:#fff,color:#fff
+style INTERNAL fill:#1a1a1a,stroke:#fff,color:#fff
 ```
 
 ---
@@ -1179,3 +1199,4 @@ sequenceDiagram
 | 1.3 | ASCII図をMermaid v9フローチャートに変更（PyCharm Pro対応）、Mermaid記法ガイドセクションを追加 |
 | 1.4 | 概要セクションに「各責務対応のモジュール」テーブルを追加（責務→モジュール対応の明示化） |
 | 1.5 | §16.5 カラーテーマ（黒背景・白文字）を必須仕様として追加、チェックリストに確認項目を追加 |
+| 1.6 | 具体例を ml_motion_v1（pipeline パッケージ）に差し替え |
