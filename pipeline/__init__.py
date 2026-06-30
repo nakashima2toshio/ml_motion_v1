@@ -1,0 +1,134 @@
+"""推論パイプライン パッケージ。
+
+Phase 0: デバイス選択ユーティリティ。
+Phase 1: YOLO11 検出器・mp4 処理・検出レコード/エクスポート。
+Phase 2: セグメンテーション・ByteTrack トラッキング・ゾーン解析。
+
+重い依存（torch/cv2/ultralytics/supervision）はいずれも関数・メソッド内で
+遅延 import するため、本パッケージの import 自体はそれらが未導入でも成功する。
+"""
+
+from pipeline.detections import (
+    COCO_COMMON,
+    DetectionRecord,
+    summarize,
+    to_csv_bytes,
+    to_json_bytes,
+)
+from pipeline.batch import (
+    BatchItemResult,
+    BatchResult,
+    build_manifest,
+    discover_media,
+    filter_media,
+    run_batch,
+)
+from pipeline.active_learning import FrameUncertainty, select_low_confidence
+from pipeline.benchmark import LatencyStats, benchmark_processor
+from pipeline.claude_vision import (
+    DEFAULT_MODEL,
+    build_review_prompt,
+    build_summary_prompt,
+    nl_query_frames,
+    review_annotation,
+    summarize_session,
+)
+from pipeline.camera import (
+    LIGHTWEIGHT_MODELS,
+    RESOLUTION_PRESETS,
+    FpsMeter,
+    is_lightweight,
+    open_camera,
+    recommend_realtime_model,
+)
+from pipeline.export_model import EXPORT_FORMATS, export_model, normalize_format, quantization_label
+from pipeline.dataset import DatasetSpec, build_dataset_yaml, train_val_split
+from pipeline.detector import AVAILABLE_MODELS, SEG_MODELS, Detector
+from pipeline.device import describe_device, get_device
+from pipeline.experiments import (
+    DEFAULT_EXPERIMENT,
+    best_run,
+    format_runs_table,
+    list_runs,
+    tracking_uri,
+)
+from pipeline.realtime import FrameProcessor, FrameResult
+from pipeline.registry import (
+    STAGES,
+    download_model,
+    model_uri,
+    normalize_stage,
+    register_model,
+    transition_stage,
+)
+from pipeline.training import TrainConfig, TrainResult, train
+from pipeline.tracking import Tracker
+from pipeline.video import TrackingResult, VideoResult, process_tracking_video, process_video
+from pipeline.zones import IntrusionEvent, Zone, ZoneAnalyzer, point_in_polygon
+
+__all__ = [
+    "get_device",
+    "describe_device",
+    "Detector",
+    "AVAILABLE_MODELS",
+    "SEG_MODELS",
+    "DetectionRecord",
+    "COCO_COMMON",
+    "summarize",
+    "to_csv_bytes",
+    "to_json_bytes",
+    "process_video",
+    "process_tracking_video",
+    "VideoResult",
+    "TrackingResult",
+    "Tracker",
+    "Zone",
+    "ZoneAnalyzer",
+    "IntrusionEvent",
+    "point_in_polygon",
+    "FrameProcessor",
+    "FrameResult",
+    "FpsMeter",
+    "RESOLUTION_PRESETS",
+    "LIGHTWEIGHT_MODELS",
+    "is_lightweight",
+    "recommend_realtime_model",
+    "open_camera",
+    "DatasetSpec",
+    "build_dataset_yaml",
+    "train_val_split",
+    "DEFAULT_EXPERIMENT",
+    "tracking_uri",
+    "list_runs",
+    "format_runs_table",
+    "best_run",
+    "STAGES",
+    "normalize_stage",
+    "register_model",
+    "transition_stage",
+    "TrainConfig",
+    "TrainResult",
+    "train",
+    "filter_media",
+    "discover_media",
+    "build_manifest",
+    "run_batch",
+    "BatchResult",
+    "BatchItemResult",
+    "LatencyStats",
+    "benchmark_processor",
+    "EXPORT_FORMATS",
+    "normalize_format",
+    "quantization_label",
+    "export_model",
+    "model_uri",
+    "download_model",
+    "DEFAULT_MODEL",
+    "build_summary_prompt",
+    "build_review_prompt",
+    "summarize_session",
+    "review_annotation",
+    "nl_query_frames",
+    "select_low_confidence",
+    "FrameUncertainty",
+]

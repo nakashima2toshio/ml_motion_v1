@@ -1,33 +1,40 @@
-# data/ — テスト動画の置き場所
+# data/ — サンプル動画・データセット置き場
 
-開発・テストで使う動画ファイルを置くディレクトリ。
-**動画本体は Git にコミットしない**（`.gitignore` で `*.mp4` 等を除外）。
-取得スクリプトだけをリポジトリで共有し、各自が実行して取得する。
+解析（Phase 1/2/5）の入力に使う動画や、学習（Phase 4）用データセットを置くディレクトリ。
 
+- **動画・データセットの実体は Git 管理外**（`.gitignore` で `data/*.mp4` / `*.mov` / `*.avi` / `data/datasets/` / `data/raw/` を除外）。この README と `.gitkeep` のみコミットされる。
+- 解析ページの **Upload** はローカルのどこからでもファイルを選べるが、整理のためここに置くことを推奨。
+
+## サンプル動画の取得（その1: 公開リポジトリ）
+
+```bash
+bash scripts/fetch_sample_videos.sh
 ```
-data/
-├── README.md       # このファイル（コミット対象）
-├── .gitkeep        # ディレクトリ保持用（コミット対象）
-└── raw/            # 取得した動画（Git 管理外）
-```
 
-## 取得方法
+`data/` に以下が保存される（取得元: [intel-iot-devkit/sample-videos](https://github.com/intel-iot-devkit/sample-videos)、物体検出デモで広く使われる公開リポジトリ）。
 
-依存ライブラリ `supervision`（`requirements.txt` に同梱）の公式アセットを使う。
+| ファイル | 内容 | 主な対象クラス |
+|---|---|---|
+| `sample_person_bicycle_car.mp4` | 人・自転車・車が混在 | person / bicycle / car |
+| `sample_people.mp4` | 人物中心 | person |
+| `sample_car.mp4` | 車両中心 | car |
+
+> ライセンス・利用条件は取得元リポジトリに従うこと。商用利用や再配布の前に元リポジトリの規約を確認する。
+
+## サンプル動画の取得（その2: supervision 公式アセット）
+
+依存ライブラリ `supervision`（Roboflow）同梱の公式アセットを `data/raw/` に取得する。
+YOLO11 → ByteTrack → supervision ゾーン解析（カウント/滞留/侵入）のデモにそのまま使える。
 
 ```bash
 # 推奨セット（車両 VEHICLES + 歩行者 PEOPLE_WALKING）を data/raw/ に取得
 python scripts/download_test_videos.py
 
-# 利用可能なアセット一覧
+# 利用可能なアセット一覧 / 個別指定 / 全取得
 python scripts/download_test_videos.py --list
-
-# 個別指定 / 全取得
 python scripts/download_test_videos.py --assets VEHICLES SUBWAY MARKET_SQUARE
 python scripts/download_test_videos.py --all
 ```
-
-## 動画の用途（仕様書 `docs/ml_motion_detection_spec.md` 対応）
 
 | アセット | 主な用途 | 対応フェーズ |
 |---|---|---|
@@ -36,5 +43,12 @@ python scripts/download_test_videos.py --all
 | `SUBWAY` | 改札・通路。ゾーン通過カウント | P2 ゾーン解析 |
 | `MARKET_SQUARE` | 広場・群衆。密集シーンでの ID 維持の堅牢性 | P2 追跡 |
 
-いずれも COCO 事前学習（`person` / `car` / `bus` / `truck` / `bicycle` 等）で
-そのまま検出でき、YOLO11 → ByteTrack → supervision ゾーン解析の検証に使える。
+## 自分で用意する場合
+
+iPhone / QuickTime 等で撮影した mp4 を AirDrop 等で Mac に転送し、ここに置く。
+解析ページの Upload で選択 → **▶ Run 解析**（初回は `yolo11s.pt` が自動ダウンロード）。
+
+## 学習用データセット（Phase 4）
+
+`data/datasets/<name>/` に YOLO 標準レイアウト（`images/train`・`images/val`・`labels/...`）で配置し、
+`data.yaml` を「実験管理」ページの「data.yaml 生成」で作成する（`data/datasets/` も Git 管理外）。

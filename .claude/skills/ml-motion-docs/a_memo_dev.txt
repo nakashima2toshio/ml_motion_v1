@@ -1,0 +1,17 @@
+memo: ml_motion_v1（Video ML Analytics Studio）開発メモ
+
+参考リンク・サンプル等を必要に応じてここに追記する（旧 grace/RAG プロジェクトの内容はこのリポジトリと無関係なため削除済み）。
+
+## ドキュメント所在
+- 設計リファレンス: docs/ml_motion_detection_spec.md（Phase 0〜6、各Phaseの使い方、docker-compose衝突対策）
+- クラス別仕様（IPO）: docs/ml_motion_spec.md
+- フォーマット仕様: .claude/skills/ml-motion-docs/a_class_method_md_format.md（IPO） / a_pages_md_format.md（Streamlit画面）
+- テスト仕様: .claude/skills/ml-motion-tests/a_test_md_format.md（SAE）
+
+## サンプルデータ
+- 取得: bash scripts/fetch_sample_videos.sh（intel-iot-devkit/sample-videos を data/ へ）
+- data/*.mp4 は Git 管理外（data/README.md 参照）
+
+## 既定・要点
+- Python 3.12 / PyTorch MPS（M2, CUDA非対応）/ YOLO11(ultralytics) + supervision / MLflow / Anthropic Claude(claude-opus-4-8)
+- 重い依存はすべて遅延 import。依存ゼロのロジック層のみ pytest 対象。

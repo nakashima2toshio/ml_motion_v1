@@ -17,7 +17,7 @@
 |---|---|
 | マシン | MacBook Air M2 / 24GB ユニファイドメモリ |
 | IDE | PyCharm Pro |
-| 言語/ランタイム | Python 3.11 |
+| 言語/ランタイム | Python 3.12 |
 | ML フレームワーク | PyTorch（**MPS** バックエンド） |
 | UI | Streamlit |
 | 基盤 | Docker Compose |
@@ -64,7 +64,7 @@
 | 12 | 推論最適化 | CoreML/ONNX 変換, 量子化, MPS 最適化 | GPU 最適化 |
 
 ### 技術スタック
-- **言語/UI**: Python 3.11, Streamlit
+- **言語/UI**: Python 3.12, Streamlit
 - **ML**: PyTorch (MPS), ultralytics(YOLO11), SAM2/FastSAM, supervision（可視化/ゾーン）, ByteTrack
 - **実験/レジストリ**: MLflow（Docker Compose）, Weights & Biases
 - **LLM/VLM**: Anthropic Claude API（Vision・要約・アノテ補助）
@@ -127,19 +127,19 @@ style UI fill:#1a1a1a,stroke:#fff,color:#fff
 ### 4.1 メイン解析画面
 ```
 ┌───────────────────────────────────────────────────────────────┐
-│  🎥 Video ML Analytics Studio                      [▶ Run] [⚙]  │
+│  🎥 Video ML Analytics Studio                    [▶ Run] [⚙]  │
 ├───────────┬───────────────────────────────────────┬───────────┤
 │ ◀ Sidebar │            映像プレビュー               │  結果ペイン │
 │           │  ┌─────────────────────────────────┐  │ ┌────────┐ │
-│ 入力ソース │  │   [person:0.92] ┌──┐            │  │ │検出統計 │ │
+│ 入力ソース  │  │   [person:0.92] ┌──┐            │  │ │検出統計 │ │
 │ ○ mp4     │  │   ID#3 ───────▶ │  │  (bbox+    │  │ │人物: 4 │ │
 │ ● iPhone  │  │                 └──┘   mask表示) │  │ │車 : 1 │ │
-│   (Cont.) │  │   ╱ゾーンA(滞留12s)╲             │  │ └────────┘ │
+│   (Cont.) │  │   ╱ゾーンA(滞留12s)╲              │  │ └────────┘ │
 │           │  └─────────────────────────────────┘  │ ┌────────┐ │
 │ タスク     │  ─────────────●──────── 00:42 / 03:10 │ │軌跡/ID  │ │
-│ ☑ 検出    │                                        │ │ #1 #2..│ │
-│ ☑ セグ    │  [Detect][Segment][Track] タブ切替     │ └────────┘ │
-│ ☑ 追跡    │                                        │ [📝NL要約] │
+│ ☑ 検出     │                                       │ │ #1 #2..│ │
+│ ☑ セグ     │  [Detect][Segment][Track] タブ切替      │ └────────┘ │
+│ ☑ 追跡     │                                        │ [📝NL要約] │
 │           │                                        │ Claudeが   │
 │ モデル     │                                        │ 「3人が    │
 │ yolo11s ▼ │                                        │ ゾーンAに  │
@@ -151,28 +151,28 @@ style UI fill:#1a1a1a,stroke:#fff,color:#fff
 ### 4.2 実験管理・モデル管理画面
 ```
 ┌───────────────────────────────────────────────────────────────┐
-│  📊 Experiments & Models                                        │
+│  📊 Experiments & Models                                      │
 ├───────────────────────────────────────────────────────────────┤
 │ Run名        mAP50  mAP50-95  推論ms  ステータス   登録          │
 │ ──────────────────────────────────────────────────────────────│
-│ ft_v3_aug    0.87    0.61      18    ✅完了      [Registry→]    │
-│ ft_v2        0.81    0.55      17    ✅完了      [v1 staging]   │
-│ baseline     0.74    0.49      16    ✅完了      [archived]     │
-│                                       ↑MLflow/W&Bと同期         │
-│ [新規学習ジョブ] [データセット品質レポート] [Claude自動レビュー] │
+│ ft_v3_aug    0.87    0.61      18    ✅完了      [Registry→]   │
+│ ft_v2        0.81    0.55      17    ✅完了      [v1 staging]  │
+│ baseline     0.74    0.49      16    ✅完了      [archived]    │
+│                                       ↑MLflow/W&Bと同期        │
+│ [新規学習ジョブ] [データセット品質レポート] [Claude自動レビュー]      │
 └───────────────────────────────────────────────────────────────┘
 ```
 
 ### 4.3 アノテーション品質画面（Claude Vision 活用）
 ```
 ┌───────────────────────────────────────────────────────────────┐
-│  🏷 Annotation QA                                               │
-│  画像: frame_0421.jpg                                           │
+│  🏷 Annotation QA                                             │
+│  画像: frame_0421.jpg                                          │
 │  ┌─────────────┐   検出された問題:                              │
-│  │ [人] [人]    │   ⚠ bbox#2 が対象を内包しきれていない          │
-│  │   [車?]      │   ⚠ #3「車」はClaude判定では「自転車」の可能性  │
+│  │ [人] [人]    │   ⚠ bbox#2 が対象を内包しきれていない            │
+│  │   [車?]      │   ⚠ #3「車」はClaude判定では「自転車」の可能性    │
 │  └─────────────┘   ✅ #1 ラベル妥当                            │
-│   [自動下書き生成] [人手で修正] [承認] [却下]                    │
+│   [自動下書き生成] [人手で修正] [承認] [却下]                      │
 └───────────────────────────────────────────────────────────────┘
 ```
 
@@ -206,13 +206,24 @@ class P0,P1,P2,P3,P4,P5,P6 default
 
 ### 各 Phase の詳細 TODO
 
+> 各 Phase の実行コマンド・入力・期待出力は、その Phase の TODO 直下の「使い方」表にまとめる。
+> 全 Phase 共通のセットアップ／テストは §9、docker-compose の衝突対策は §10 を参照。
+
 #### P0 基盤構築
-- [ ] Python 3.11 仮想環境（uv/venv）と PyCharm Pro プロジェクト設定
+- [ ] Python 3.12 仮想環境（uv/venv）と PyCharm Pro プロジェクト設定
 - [ ] `torch` + MPS 動作確認スクリプト（`mps.is_available()` / 簡単なテンソル演算）
 - [ ] `ultralytics`, `supervision`, `streamlit`, `opencv-python`, `anthropic` 導入
 - [ ] Streamlit マルチページ雛形（解析 / 実験管理 / アノテQA）
 - [ ] `docker-compose.yml`（MLflow tracking server, 必要なら PostgreSQL/MinIO）
 - [ ] ディレクトリ設計（`app/`, `pipeline/`, `models/`, `data/`, `experiments/`）
+
+**使い方**
+
+| 項目 | 内容 |
+|---|---|
+| 実行コマンド | `python scripts/check_mps.py` / `python main.py` / `docker-compose -f docker-compose/docker-compose.yml up -d` / `streamlit run app/Home.py` |
+| 入力データ | なし（環境確認のみ） |
+| 期待する出力・表示 | `check_mps.py` → `MPS available : True` と `✅ Phase 0 完了判定: ... == True` ／ MLflow UI が `http://localhost:5000` で開く ／ Streamlit が起動し5ページのナビが出る |
 
 #### P1 検出MVP（mp4）
 - [ ] mp4 アップロード UI（`st.file_uploader`）
@@ -221,17 +232,41 @@ class P0,P1,P2,P3,P4,P5,P6 default
 - [ ] 検出結果テーブル（class, conf, frame, bbox）と CSV/JSON エクスポート
 - [ ] 信頼度しきい値・対象クラスのサイドバー設定
 
+**使い方**
+
+| 項目 | 内容 |
+|---|---|
+| 実行コマンド | `streamlit run app/Home.py` →「解析」ページ |
+| 入力データ | mp4/mov/avi 動画（サンプル取得は §9.2 / `data/` 推奨）。サイドバーで モデル(yolo11n/s/m)・信頼度しきい値・対象クラス・フレーム間引き を設定 → 「▶ Run 検出」 |
+| 期待する出力・表示 | 注釈付き動画（bbox＋クラス名＋信頼度）／クラス別集計（延べ・最大同時）／検出テーブル（frame, time_sec, class, conf, bbox）／CSV・JSON・注釈付き動画のDLボタン。初回は `yolo11s.pt` を自動DL |
+
 #### P2 セグメンテーション＋トラッキング
 - [ ] YOLO11-seg または FastSAM/SAM2 でマスク生成・描画
 - [ ] ByteTrack/BoT-SORT で ID 付与・軌跡描画
 - [ ] ゾーン定義 UI（多角形）と supervision `PolygonZone`
 - [ ] ゾーン別カウント・滞留時間・侵入イベントの集計と可視化
 
+**使い方**
+
+| 項目 | 内容 |
+|---|---|
+| 実行コマンド | 同「解析」ページ。サイドバー「タスク」で セグメンテーション／トラッキング／ゾーン解析 を有効化 |
+| 入力データ | mp4 動画（サンプル取得は §9.2）＋（ゾーン解析時）正規化座標(0〜1)の多角形JSON。既定例 `[{"name":"ゾーンA","polygon":[[0.3,0.3],[0.7,0.3],[0.7,0.9],[0.3,0.9]]}]` |
+| 期待する出力・表示 | マスク描画／ID付き軌跡（例 `#3 person 0.92`）／ゾーン枠描画／ゾーン解析テーブル（通過ID数・侵入回数・最大同時・合計/最大滞留秒）／ID別滞留テーブル／「ユニークID数」メトリクス。CSV/JSON に `tracker_id` 列追加 |
+
 #### P3 リアルタイム（iPhone）
 - [ ] Continuity Camera をデバイスとして OpenCV から取り込み
 - [ ] streamlit-webrtc によるブラウザ経路（代替）
 - [ ] フレームスキップ／解像度調整／非同期処理でスループット最適化
 - [ ] リアルタイム時の軽量モデル（yolo11n/s）自動切替
+
+**使い方**
+
+| 項目 | 内容 |
+|---|---|
+| 実行コマンド | `streamlit run app/Home.py` →「リアルタイム」ページ（ローカル実行のみ）。ブラウザ経路は `uv pip install -e '.[realtime]'` |
+| 入力データ | iPhone映像。経路① Continuity Camera（カメラindex指定）／経路② ブラウザ(streamlit-webrtc)。サイドバーで 解像度・フレームスキップ・モデル・軽量自動切替 |
+| 期待する出力・表示 | ライブ注釈映像（検出＋追跡）／FPS表示・検出数・frame番号／重いモデル選択時は `⚡ 自動切替: yolo11m → yolo11s`。目標 ≥10fps |
 
 #### P4 学習＆実験管理
 - [ ] データセット設計（クラス定義・分割・命名規約）
@@ -240,17 +275,41 @@ class P0,P1,P2,P3,P4,P5,P6 default
 - [ ] MLflow/W&B にハイパラ・メトリクス・成果物を記録
 - [ ] MLflow Model Registry でステージ管理（staging/production/archived）
 
+**使い方**
+
+| 項目 | 内容 |
+|---|---|
+| 実行コマンド | `docker-compose -f docker-compose/docker-compose.yml up -d`（MLflow起動）→「実験管理」ページ |
+| 入力データ | 学習: `data.yaml`（YOLO形式。ページ下「data.yaml生成」で雛形作成可）＋画像/ラベル。ベースモデル・epochs を指定し「▶ 学習を開始」。Run比較: 「🔄 MLflowから取得」 |
+| 期待する出力・表示 | Run一覧テーブル（run名/status/mAP50/mAP50-95）／最良Run強調／学習完了で `run_id`＋メトリクスJSON／MLflow UI にハイパラ・メトリクス・成果物(best.pt)記録、Registry でステージ管理 |
+
 #### P5 本番化＆最適化
 - [ ] バッチ推論ジョブ（ディレクトリ一括処理・ジョブキュー）
 - [ ] CoreML/ONNX 変換、量子化（INT8/FP16）、MPS 最適化のベンチ
 - [ ] Registry からのモデル取得・差し替え（バージョン切替）
 - [ ] 推論レイテンシ・スループットのモニタリング
 
+**使い方**
+
+| 項目 | 内容 |
+|---|---|
+| 実行コマンド | 「本番・最適化」ページ |
+| 入力データ | バッチ: 入力ディレクトリ（mp4複数。サンプル取得は §9.2）＋出力ディレクトリ＋モデル/信頼度/間引き。変換: 重みパス＋書式(onnx/coreml/torchscript/engine)＋量子化(FP32/FP16/INT8)。Registry取得: モデル名＋ステージ |
+| 期待する出力・表示 | バッチ: マニフェスト表（input/output/frames/detections/status）＋成功/失敗/総検出数、`output_batch/` に注釈付き動画／変換: 出力パス（例 `yolo11s.onnx`）／計測: `LatencyStats`(mean/p50/p95/fps) を変換前後で比較／Registry URI（`models:/ml_motion_detector/Production`）表示 |
+
 #### P6 高度化（任意）
 - [ ] Claude Vision による検出結果の自然言語サマリ・レポート生成
 - [ ] 自然言語クエリ（「赤い服の人を探す」等）→ 該当フレーム抽出
 - [ ] アノテーション自動レビュー（ラベル整合・IoU 逸脱フラグ）
 - [ ] Active Learning ループ（低確信サンプルを優先的に再学習へ）
+
+**使い方**
+
+| 項目 | 内容 |
+|---|---|
+| 実行コマンド | `.env` に `ANTHROPIC_API_KEY` 設定後、「解析」ページの「📝 NL要約」／「アノテーションQA」ページ |
+| 入力データ | NL要約: P1/P2 の検出・ゾーン結果（自動）。レビュー: フレーム画像＋提案ラベル（カンマ区切り）。NL検索: クエリ（例「赤い服の人」）＋フレーム要約一覧（`nl_query_frames` をコードから） |
+| 期待する出力・表示 | 自然言語サマリ（例「過去のセッションで3人がゾーンAに侵入…」）／アノテレビュー（各ラベルの妥当・要修正＋理由）／NL検索→該当フレーム番号の配列（構造化出力）／`select_low_confidence` で低確信フレーム抽出。モデルは `claude-opus-4-8` |
 
 ---
 
@@ -286,3 +345,67 @@ class P0,P1,P2,P3,P4,P5,P6 default
 | アノテーション品質ばらつき | Claude Vision でのダブルチェック、ガイドライン整備、IoU 監査 |
 | モデル差し替え時の再現性低下 | MLflow Registry でバージョン固定、データセットも versioning |
 | SAM2 等の重量モデルのメモリ圧迫 | FastSAM/MobileSAM へ切替、バッチサイズ調整 |
+
+---
+
+## 9. 実行方法（全 Phase 共通）
+
+各 Phase 個別の実行コマンド・入力・期待出力は §5「各 Phase の詳細 TODO」内の
+各 Phase 直下「使い方」表を参照。本節は全 Phase 共通のセットアップとテストのみを示す。
+
+### 9.1 初回セットアップ
+
+```bash
+git pull
+uv venv --python 3.12 && source .venv/bin/activate && uv pip install -e .
+cp .env.example .env          # ANTHROPIC_API_KEY を設定（Phase 6 で使用）
+```
+
+UI 系はすべて `streamlit run app/Home.py` で起動し、左ナビの
+**解析 / リアルタイム / 実験管理 / 本番・最適化 / アノテーションQA** から各 Phase を使う。
+
+### 9.2 サンプルデータ取得（動画入力 Phase 用）
+
+解析（P1/P2）・バッチ（P5）の動作確認には mp4 が必要。`data/` に取得する。
+
+```bash
+bash scripts/fetch_sample_videos.sh
+```
+
+人・自転車・車が映る公開サンプル（`data/sample_person_bicycle_car.mp4` 等）が `data/` に保存される。
+解析ページの **Upload** はローカルの任意パスから選べるが、整理のため `data/` 推奨。
+`data/*.mp4` は Git 管理外。詳細・入手元・ライセンスは [`data/README.md`](../data/README.md) を参照。
+
+### 9.3 テスト
+
+```bash
+pytest tests/ -q
+```
+
+依存ゼロのロジック層（検出エクスポート・ゾーン集計・FPS/モデル切替・データセット・
+バッチ/書式・レイテンシ・Claudeプロンプト・Active Learning）が緑になる。
+
+---
+
+## 10. docker-compose の名前/ポート衝突対策
+
+別アプリでも `docker-compose -f docker-compose/docker-compose.yml` を使っている場合、
+**Compose はディレクトリ名（`docker-compose`）を既定のプロジェクト名に採用する**ため、
+両アプリのプロジェクト名が一致してコンテナ/ネットワーク/ボリューム/ポートが衝突する。
+
+本リポジトリでは以下で回避している（`docker-compose/docker-compose.yml`）。
+
+- **プロジェクト名を固定**: top-level `name: ml_motion_v1`。
+  - 旧 `docker-compose` v1 は `name:` 非対応。その場合は
+    `docker-compose -p ml_motion_v1 -f docker-compose/docker-compose.yml up -d`
+    または環境変数 `COMPOSE_PROJECT_NAME=ml_motion_v1` を使う。
+- **コンテナ名を固有化**: `container_name: ml_motion_v1_mlflow`。
+- **ホストポートを可変化**: `ports: "${MLFLOW_PORT:-5000}:5000"`。別アプリが 5000 使用中なら
+  `.env` に `MLFLOW_PORT=5001` を設定し、`MLFLOW_TRACKING_URI` も `http://localhost:5001` に更新。
+
+```bash
+# 例: ポートを 5001 に変えて起動
+echo "MLFLOW_PORT=5001" >> .env
+docker-compose -f docker-compose/docker-compose.yml up -d
+# UI: http://localhost:5001
+```

@@ -1,0 +1,43 @@
+# Phase 0: MLflow Tracking サーバ（実験管理・Model Registry の基盤）。
+#
+# 起動:
+#   docker-compose -f docker-compose/docker-compose.yml up -d
+# UI:
+#   http://localhost:${MLFLOW_PORT:-5000}
+#
+# バックエンドは sqlite、アーティファクトはローカルディレクトリ（experiments/）に保存する。
+# 本格運用で PostgreSQL/MinIO が必要になったら Phase 4/5 でサービスを追加する。
+#
+# ⚠️ 他アプリとの名前/ポート衝突対策:
+#   - プロジェクト名を明示（name: ml_motion_v1）。Compose はディレクトリ名を既定の
+#     プロジェクト名に使うため、別アプリの docker-compose/ と衝突しないよう固定する。
+#     ※ 旧 docker-compose v1 は top-level `name:` 非対応。その場合は
+#       `docker-compose -p ml_motion_v1 -f docker-compose/docker-compose.yml up -d`
+#       または環境変数 COMPOSE_PROJECT_NAME=ml_motion_v1 を使う。
+#   - ホスト側ポートは MLFLOW_PORT で変更可能（既定 5000）。別アプリが 5000 を使用中なら
+#     `.env` に MLFLOW_PORT=5001 等を設定（MLFLOW_TRACKING_URI も合わせて更新）。
+name: ml_motion_v1
+
+services:
+  mlflow:
+    image: python:3.12-slim
+    container_name: ml_motion_v1_mlflow
+    working_dir: /mlflow
+    ports:
+      - "${MLFLOW_PORT:-5000}:5000"
+    volumes:
+      # リポジトリの experiments/ をマウントし、DB とアーティファクトを永続化する。
+      - ../experiments:/mlflow
+    command: >
+      bash -lc "pip install --no-cache-dir 'mlflow>=2.18,<3' &&
+      mlflow server
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --default-artifact-root /mlflow/mlruns
+      --host 0.0.0.0 --port 5000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped

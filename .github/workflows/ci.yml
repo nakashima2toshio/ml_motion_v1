@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---- ブロッキング: lint + compile + 単体テスト ----
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # 単体テストは依存ゼロ層のみ（重い依存 torch/cv2/ultralytics/supervision/mlflow/anthropic は
+      # 遅延 import のため不要）。pytest/ruff/pyyaml だけで収集・実行できる。
+      - run: pip install ruff pytest pyyaml
+      - name: Ruff lint
+        run: ruff check .
+      - name: Compile
+        run: python -m compileall -q pipeline app scripts tests main.py
+      - name: Unit tests
+        run: pytest tests/ -q
+
+  # ---- build 成功後、claude/* ブランチの PR を master へ自動マージ ----
+  auto-merge:
+    needs: build
+    if: >-
+      github.event_name == 'pull_request' &&
+      startsWith(github.head_ref, 'claude/') &&
+      !contains(github.event.pull_request.labels.*.name, 'hold')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Ready & merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr ready "$PR" --repo "$GITHUB_REPOSITORY" || true
+          gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --merge --delete-branch=false
