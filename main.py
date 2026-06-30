@@ -1,16 +1,28 @@
-# This is a sample Python script.
+"""Video ML Analytics Studio — 簡易ステータス エントリポイント。
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+依存導入後の素早い疎通確認用。詳細な MPS 動作確認は scripts/check_mps.py を使う。
+
+    python main.py
+"""
+
+from __future__ import annotations
+
+from pipeline.device import describe_device
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+def main() -> None:
+    info = describe_device()
+    print("Video ML Analytics Studio — Phase 0 環境ステータス")
+    print(f"  torch          : {info['torch'] or '未導入'}")
+    print(f"  selected device: {info['device']}")
+    print(f"  MPS available  : {info['mps_available']}")
+    print(f"  CUDA available : {info['cuda_available']}")
+    print()
+    print("次のステップ:")
+    print("  - 詳細な MPS 確認 : python scripts/check_mps.py")
+    print("  - UI 起動         : streamlit run app/Home.py")
+    print("  - MLflow 起動     : docker-compose -f docker-compose/docker-compose.yml up -d")
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+if __name__ == "__main__":
+    main()
