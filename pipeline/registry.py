@@ -51,6 +51,19 @@ def transition_stage(model_name: str, version: str, stage: str, archive_existing
     )
 
 
+def model_uri(model_name: str, stage: str = "Production") -> str:
+    """Registry のモデル URI を組み立てる（依存なし）。stage は正規化する。"""
+    return f"models:/{model_name}/{normalize_stage(stage)}"
+
+
+def download_model(model_name: str, stage: str = "Production", dst_dir: str = "models") -> str:
+    """Registry の指定ステージのモデル成果物をローカルへ取得する（mlflow 遅延 import）。"""
+    import mlflow
+
+    mlflow.set_tracking_uri(_tracking_uri())
+    return mlflow.artifacts.download_artifacts(artifact_uri=model_uri(model_name, stage), dst_path=dst_dir)
+
+
 def list_versions(model_name: str) -> list[dict]:
     """登録済みモデルのバージョン一覧（mlflow 遅延 import）。"""
     from mlflow.tracking import MlflowClient
