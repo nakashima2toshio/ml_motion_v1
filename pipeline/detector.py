@@ -11,6 +11,9 @@ from pipeline.device import get_device
 # 利用可能な検出モデル（軽量 → 高精度）。リアルタイム(P3)は n/s を既定にする。
 AVAILABLE_MODELS: tuple[str, ...] = ("yolo11n.pt", "yolo11s.pt", "yolo11m.pt")
 
+# セグメンテーション用モデル（YOLO11-seg）。Phase 2 で使用。
+SEG_MODELS: tuple[str, ...] = ("yolo11n-seg.pt", "yolo11s-seg.pt", "yolo11m-seg.pt")
+
 
 class Detector:
     """ultralytics YOLO11 をラップし、1 フレームの推論結果を返す。"""

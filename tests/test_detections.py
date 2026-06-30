@@ -37,7 +37,7 @@ def test_to_csv_bytes_roundtrip():
     assert rows[0]["class_name"] == "person"
     assert rows[2]["class_name"] == "car"
     assert set(rows[0].keys()) == {
-        "frame", "time_sec", "class_id", "class_name", "confidence", "x1", "y1", "x2", "y2",
+        "frame", "time_sec", "class_id", "class_name", "confidence", "x1", "y1", "x2", "y2", "tracker_id",
     }
 
 

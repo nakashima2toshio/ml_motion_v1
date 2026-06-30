@@ -80,12 +80,30 @@ pytest tests/ -q
 > 注釈付き動画はコーデック（avc1→mp4v フォールバック）依存でブラウザ再生できない場合があるため、
 > ダウンロードボタンも用意している。
 
+## Phase 2（セグメンテーション ＋ トラッキング ＋ ゾーン解析）
+
+検出に加えてマスク描画・ID 付与（軌跡）・ゾーン別の滞留時間/侵入イベントを集計する。
+「解析」ページのサイドバー「タスク」で有効化する。
+
+- **セグメンテーション**: `YOLO11-seg`（`yolo11*-seg.pt`）でマスク生成・`MaskAnnotator` 描画。
+- **トラッキング**: `ByteTrack`（supervision）で `tracker_id` 付与、`TraceAnnotator` で軌跡描画。
+- **ゾーン解析**: 正規化座標(0〜1)の多角形を JSON で定義。ID ごとの滞留時間・侵入回数・最大同時数を集計。
+- 実装: `pipeline/tracking.py`（ByteTrack ラッパー）、`pipeline/zones.py`（点-多角形判定・滞留/侵入、**依存ゼロでテスト可能**）、
+  `pipeline/video.py` の `process_tracking_video()`。
+- CSV/JSON には `tracker_id` 列を追加。完了判定（仕様書 §5）「人物に ID 付与＋ゾーン滞留時間が出る」に対応。
+
+```bash
+pytest tests/ -q     # detections + zones の単体テスト（計 11 件）
+```
+
+> ゾーン定義はサイドバーの JSON で編集（既定例つき）。GUI 描画(streamlit-drawable-canvas)は将来拡張。
+
 ## 以降の Phase
 
 | Phase | ゴール |
 |---|---|
 | ~~P1~~ | ~~検出 MVP（mp4 → YOLO11 → 注釈付き動画/CSV）~~ ✅ 実装済み |
-| P2 | セグメンテーション ＋ トラッキング ＋ ゾーン解析 |
+| ~~P2~~ | ~~セグメンテーション ＋ トラッキング ＋ ゾーン解析~~ ✅ 実装済み |
 | P3 | リアルタイム（iPhone / Continuity Camera） |
 | P4 | 学習・実験管理（Fine-tuning / MLflow / Model Registry） |
 | P5 | 本番化・最適化（バッチ推論 / CoreML・ONNX / 量子化） |
