@@ -1,0 +1,1 @@
+# MLflow の DB(mlflow.db)・アーティファクト(mlruns/)の置き場。生成物は git 管理しない。
