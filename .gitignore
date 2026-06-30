@@ -241,3 +241,14 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+
+# ---- ML motion test data ----
+# 動画本体はコミットしない（scripts/download_test_videos.py で取得）。
+# ディレクトリ構造のみ .gitkeep / README で保持する。
+data/*
+!data/.gitkeep
+!data/README.md
+data/**/*.mp4
+data/**/*.mov
+data/**/*.avi
+data/**/*.mkv
