@@ -241,3 +241,27 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+
+# ---- ml_motion_v1 project-specific ----
+# 環境変数（API キー等）
+.env
+
+# MLflow 生成物（experiments/ 配下の DB・アーティファクト）
+experiments/mlflow.db
+experiments/mlruns/
+mlruns/
+
+# モデル重み・変換成果物
+models/*.pt
+models/*.onnx
+models/*.mlmodel
+models/*.engine
+
+# データ（サンプル動画・データセット）
+data/*.mp4
+data/*.mov
+data/*.avi
+data/datasets/
+
+# ultralytics の既定出力
+runs/

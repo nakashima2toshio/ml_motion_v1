@@ -1,0 +1,32 @@
+# Phase 0: MLflow Tracking サーバ（実験管理・Model Registry の基盤）。
+#
+# 起動:
+#   docker-compose -f docker-compose/docker-compose.yml up -d
+# UI:
+#   http://localhost:5000
+#
+# バックエンドは sqlite、アーティファクトはローカルディレクトリ（experiments/）に保存する。
+# 本格運用で PostgreSQL/MinIO が必要になったら Phase 4/5 でサービスを追加する。
+services:
+  mlflow:
+    image: python:3.11-slim
+    container_name: ml_motion_mlflow
+    working_dir: /mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      # リポジトリの experiments/ をマウントし、DB とアーティファクトを永続化する。
+      - ../experiments:/mlflow
+    command: >
+      bash -lc "pip install --no-cache-dir 'mlflow>=2.18,<3' &&
+      mlflow server
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --default-artifact-root /mlflow/mlruns
+      --host 0.0.0.0 --port 5000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
