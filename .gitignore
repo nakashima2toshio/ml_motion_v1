@@ -262,6 +262,7 @@ data/*.mp4
 data/*.mov
 data/*.avi
 data/datasets/
+data/raw/
 
 # ultralytics の既定出力
 runs/
