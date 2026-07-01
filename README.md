@@ -3,6 +3,8 @@
 動画ML解析プラットフォーム。mp4 / iPhone リアルタイム映像 → 物体検出・セグメンテーション・トラッキング → ゾーン解析 → Claude Vision による要約・アノテーション補助。MLflow で実験管理し、Fine-tuning したモデルをバージョン管理して本番推論パイプラインへ載せる。
 
 - 設計の全体像・開発計画は [`docs/ml_motion_detection_spec.md`](docs/ml_motion_detection_spec.md) を参照。
+- **画面ごとの操作マニュアル**は [`docs/manual/`](docs/manual/README.md)（解析 / リアルタイム / 実験管理 / 本番・最適化 / アノテQA）。
+- クラス別仕様（IPO）は [`docs/ml_motion_spec.md`](docs/ml_motion_spec.md)。
 - 対象: MacBook Air M2（MPS バックエンド）/ Python 3.12 / PyCharm Pro。
 
 ## Phase 0（基盤構築）
