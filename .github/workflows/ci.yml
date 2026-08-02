@@ -26,7 +26,10 @@ jobs:
           python-version: "3.12"
       # 単体テストは依存ゼロ層のみ（重い依存 torch/cv2/ultralytics/supervision/mlflow/anthropic は
       # 遅延 import のため不要）。pytest/ruff/pyyaml だけで収集・実行できる。
-      - run: pip install ruff pytest pyyaml
+      # ⚠️ ruff はバージョン固定。未固定だと ruff 側の既定ルール追加（0.16 で RUF022 /
+      # PLR1730 / EXE001 / N999 等が既定入り）でコード無変更のまま CI が赤くなる。
+      # 更新は「上げる → 出た指摘を直す」を 1 つの PR で行う。
+      - run: pip install ruff==0.15.8 pytest pyyaml
       - name: Ruff lint
         run: ruff check .
       - name: Compile
