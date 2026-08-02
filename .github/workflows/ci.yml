@@ -25,21 +25,44 @@ jobs:
         with:
           python-version: "3.12"
       # 単体テストは依存ゼロ層のみ（重い依存 torch/cv2/ultralytics/supervision/mlflow/anthropic は
-      # 遅延 import のため不要）。pytest/ruff/pyyaml だけで収集・実行できる。
+      # 遅延 import のため不要）。backend/tests は FastAPI の TestClient を使うため
+      # fastapi + httpx を足す（いずれも純 Python ホイールで軽い）。
       # ⚠️ ruff はバージョン固定。未固定だと ruff 側の既定ルール追加（0.16 で RUF022 /
       # PLR1730 / EXE001 / N999 等が既定入り）でコード無変更のまま CI が赤くなる。
       # 更新は「上げる → 出た指摘を直す」を 1 つの PR で行う。
-      - run: pip install ruff==0.15.8 pytest pyyaml
+      - run: pip install ruff==0.15.8 pytest pyyaml fastapi httpx
       - name: Ruff lint
         run: ruff check .
       - name: Compile
-        run: python -m compileall -q pipeline app scripts tests main.py
+        run: python -m compileall -q pipeline app backend scripts tests main.py
       - name: Unit tests
-        run: pytest tests/ -q
+        run: pytest tests/ backend/tests/ -q
 
-  # ---- build 成功後、claude/* ブランチの PR を master へ自動マージ ----
+  # ---- ブロッキング: フロントエンド（型チェック + テスト + ビルド） ----
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - name: Type check
+        run: npm run lint
+        working-directory: frontend
+      - name: Unit tests
+        run: npm test
+        working-directory: frontend
+      - name: Build
+        run: npm run build
+        working-directory: frontend
+
+  # ---- build + frontend 成功後、claude/* ブランチの PR を master へ自動マージ ----
   auto-merge:
-    needs: build
+    needs: [build, frontend]
     if: >-
       github.event_name == 'pull_request' &&
       startsWith(github.head_ref, 'claude/') &&
