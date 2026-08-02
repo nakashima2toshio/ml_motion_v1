@@ -606,3 +606,10 @@ input[type="range"] {
 .page .panel {
   margin-bottom: 8px;
 }
+
+.metric-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin: 12px 0;
+}

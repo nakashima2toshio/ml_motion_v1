@@ -96,8 +96,34 @@ describe('progressLabel', () => {
     expect(progressLabel(state)).toBe('解析中… 30/120 フレーム');
   });
 
+  it('バッチ画面は単位を「ファイル」に差し替えられる', () => {
+    const state = { ...initialJobState, frames: { current: 1, total: 2 } };
+    expect(progressLabel(state, '処理中…', 'ファイル')).toBe('処理中… 1/2 ファイル');
+  });
+
   it('フレーム数が無ければメッセージを出す', () => {
     const state = { ...initialJobState, message: 'モデルを読み込み中…' };
     expect(progressLabel(state)).toBe('モデルを読み込み中…');
+  });
+});
+
+describe('start の初期メッセージ', () => {
+  it('画面ごとの文言を渡せる（バッチ画面に解析用の文言が漏れない）', () => {
+    const state = jobReducer(initialJobState, { type: 'start', jobId: 'x', message: '処理中…' });
+    expect(state.message).toBe('処理中…');
+    expect(progressLabel(state, '処理中…', 'ファイル')).toBe('処理中…');
+  });
+
+  it('省略時は中立な既定文言', () => {
+    expect(jobReducer(initialJobState, { type: 'start', jobId: 'x' }).message).toBe('実行中…');
+  });
+
+  it('started イベントにメッセージが無ければ開始時の文言を保つ', () => {
+    let state = jobReducer(initialJobState, { type: 'start', jobId: 'x', message: '処理中…' });
+    state = jobReducer(state, {
+      type: 'event',
+      event: { seq: 0, ts: 0, type: 'started', message: '', data: {} },
+    });
+    expect(state.message).toBe('処理中…');
   });
 });

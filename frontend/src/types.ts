@@ -217,3 +217,59 @@ export interface DatasetYaml {
   yaml: string;
   classes: string[];
 }
+
+// ---------------------------------------------------------------------------
+// 本番化・最適化（app/views/production.py 相当）
+// ---------------------------------------------------------------------------
+
+/** POST /api/production/discover */
+export interface DiscoverResponse {
+  input_dir: string;
+  files: string[];
+  exists: boolean;
+}
+
+/** POST /api/production/batch */
+export interface BatchRequest {
+  input_dir: string;
+  output_dir: string;
+  model_name: string;
+  conf: number;
+  frame_stride: number;
+}
+
+/** バッチ結果のマニフェスト 1 行 */
+export interface ManifestRow {
+  input: string;
+  output: string;
+  frames: number;
+  detections: number;
+  status: string;
+}
+
+/** バッチジョブの結果 */
+export interface BatchResult {
+  input_dir: string;
+  output_dir: string;
+  succeeded: number;
+  failed: number;
+  total_detections: number;
+  manifest: ManifestRow[];
+}
+
+/** 量子化の指定 */
+export type Quantization = 'FP32' | 'FP16' | 'INT8';
+
+/** POST /api/production/export */
+export interface ExportResponse {
+  output_path: string;
+  fmt: string;
+  quantization: string;
+}
+
+/** GET /api/production/registry-uri */
+export interface RegistryUri {
+  uri: string;
+  stages: string[];
+  formats: string[];
+}

@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -197,6 +197,59 @@ class DatasetYamlResponse(BaseModel):
 
     yaml: str
     classes: list[str]
+
+
+# =============================================================================
+# 本番化・最適化（app/views/production.py 相当）
+# =============================================================================
+
+
+class DiscoverRequest(BaseModel):
+    """`POST /api/production/discover`。"""
+
+    input_dir: str = Field(default="data/incoming", min_length=1)
+
+
+class DiscoverResponse(BaseModel):
+    """入力ディレクトリの確認結果。パスはリポジトリ相対で返す。"""
+
+    input_dir: str
+    files: list[str]
+    exists: bool
+
+
+class BatchRequest(BaseModel):
+    """`POST /api/production/batch`（▶ バッチ実行）。"""
+
+    input_dir: str = Field(default="data/incoming", min_length=1)
+    output_dir: str = Field(default="output_batch", min_length=1)
+    model_name: str = "yolo11s.pt"
+    conf: float = Field(default=0.25, ge=0.0, le=1.0)
+    frame_stride: int = Field(default=2, ge=1, le=10)
+
+
+class ExportRequest(BaseModel):
+    """`POST /api/production/export`（🛠 変換を実行）。"""
+
+    weights: str = Field(default="yolo11s.pt", min_length=1)
+    fmt: str = "onnx"
+    quantization: Literal["FP32", "FP16", "INT8"] = "FP32"
+
+
+class ExportResponse(BaseModel):
+    """変換結果。"""
+
+    output_path: str
+    fmt: str
+    quantization: str
+
+
+class RegistryUriResponse(BaseModel):
+    """`GET /api/production/registry-uri`。"""
+
+    uri: str
+    stages: list[str]
+    formats: list[str]
 
 
 # =============================================================================

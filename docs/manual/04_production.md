@@ -1,6 +1,24 @@
 # ⚙️ 本番/最適化画面 操作マニュアル
 
-**画面**: 左ナビ「本番/最適化」（`app/views/production.py`）。
+**画面**: 左ナビ「本番/最適化」。
+
+> **UI は 2 種類あります（移行期）。操作手順・結果の見方は同じです。**
+>
+> | UI | 起動 | 実体 |
+> |---|---|---|
+> | React（推奨） | `./run_dev.sh` → http://localhost:5173/production | `frontend/src/pages/ProductionPage.tsx` + `backend/app/api/production.py` |
+> | Streamlit（従来） | `streamlit run app/Home.py` → http://localhost:8501 | `app/views/production.py` |
+>
+> ⚠️ **React 版はパスをリポジトリルート配下に制限しています。**
+> 入力/出力ディレクトリ・重みパスがリポジトリ外を指すと
+> 「リポジトリ外のパスは指定できません」と表示して実行しません（相対パスはルート基準）。
+> リポジトリ外のディレクトリを使いたい場合は、バックエンド起動時に環境変数を設定してください:
+>
+> ```zsh
+> ML_MOTION_ALLOWED_ROOTS=/Users/me/Videos ./run_dev.sh   # 複数指定は : 区切り
+> ```
+>
+> 移行計画は [`docs/react_migration_todo.md`](../react_migration_todo.md)。
 
 ## 目的
 - **バッチ推論**：ディレクトリ内の動画を一括処理。
