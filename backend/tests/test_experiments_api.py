@@ -75,6 +75,32 @@ def test_runs_returns_rows_and_best_run(client: TestClient, monkeypatch: pytest.
     assert body["best_metric"] == 0.6123
 
 
+def test_runs_reads_metrics_logged_by_ultralytics(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    """⚠️ 回帰テスト（docs/known_issues.md #1）。
+
+    MLflow に保存されるメトリクス名は括弧が落ちる（`metrics/mAP50-95B`）。
+    修正前は mAP 列が 0.0、`best_metric` も 0.0 になっていた。
+    """
+    import pipeline.experiments
+
+    monkeypatch.setattr(
+        pipeline.experiments,
+        "list_runs",
+        lambda experiment: [
+            {"run_name": "baseline", "status": "FINISHED",
+             "metrics": {"metrics/mAP50B": 0.71, "metrics/mAP50-95B": 0.512}},
+            {"run_name": "tuned", "status": "FINISHED",
+             "metrics": {"metrics/mAP50B": 0.834, "metrics/mAP50-95B": 0.6412}},
+        ],
+    )
+
+    body = client.get("/api/experiments/runs").json()
+    assert body["rows"][1]["mAP50"] == 0.834
+    assert body["rows"][1]["mAP50-95"] == 0.6412
+    assert body["best_run_name"] == "tuned"
+    assert body["best_metric"] == 0.6412
+
+
 def test_runs_passes_experiment_name_through(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
     seen: dict = {}
 
