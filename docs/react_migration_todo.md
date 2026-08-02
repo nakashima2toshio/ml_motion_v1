@@ -123,16 +123,21 @@ frontend/
 
 ## 3. TODO（フェーズ別）
 
-### R0. 基盤（バックエンド骨組み＋React シェル）
-- [ ] `pyproject.toml` に `fastapi` / `uvicorn[standard]` / `python-multipart` / `sse-starlette`(任意) を追加、`packages` に `backend` を追加
-- [ ] `backend/app/main.py`：FastAPI 生成・CORS（`http://localhost:5173`）・`load_dotenv()`・ルータ登録
-- [ ] `backend/app/core/jobs.py`：`grace_v2` の JobManager を移植（スレッド実行・イベント蓄積・リプレイ可能な SSE・完了ジョブ上限）
-- [ ] `backend/app/core/detector_cache.py`：`(model_name, device, conf, classes)` キーの `Detector` キャッシュ（`@st.cache_resource` 代替）
-- [ ] `backend/app/api/meta.py`：`/device`・`/options`（`describe_device()` と各定数をそのまま返す）
-- [ ] `frontend/` scaffold：Vite + React 18 + TS（`package.json` scripts: `dev` / `build` / `lint`(tsc --noEmit) / `test`(vitest)）
-- [ ] `frontend/src/App.tsx`：**旧 `app/Home.py` 相当**（タイトル「Video ML Analytics Studio 🎥」・5 ページのナビ・既定は「解析」）
-- [ ] `frontend/src/api/client.ts` / `types.ts` / `components/DeviceBar.tsx`
-- [ ] `run_dev.sh`：backend(:8000) ＋ frontend(:5173) 同時起動
+### R0. 基盤（バックエンド骨組み＋React シェル）✅ 完了
+- [x] `pyproject.toml` に `fastapi` / `uvicorn[standard]` / `python-multipart` を追加、`packages` に `backend` を追加
+- [x] `backend/app/main.py`：FastAPI 生成・CORS（`http://localhost:5173`）・`load_dotenv()`・ルータ登録・`GET /api/health`
+- [x] `backend/app/core/jobs.py`：`grace_v2` の JobManager を移植（スレッド実行・イベント蓄積・リプレイ可能な SSE・完了ジョブ上限）
+      ／ `Job.progress(cur, total)` が `pipeline` の `progress_cb` にそのまま渡せる
+- [x] `backend/app/core/detector_cache.py`：`(model_name, device, conf, classes)` キーの `Detector` / `FrameProcessor` キャッシュ（`@st.cache_resource` 代替・LRU 2 件）
+- [x] `backend/app/api/meta.py`：`/device`・`/options`（`describe_device()` と各定数をそのまま返す）
+- [x] `frontend/` scaffold：Vite + React 18 + TS（`dev` / `build` / `lint`(tsc --noEmit) / `test`(vitest)）＋ `/api`・`/media` の dev プロキシ
+- [x] `frontend/src/App.tsx` ＋ `src/nav.ts`：**旧 `app/Home.py` 相当**（タイトル・5 ページのナビ・既定は「解析」）
+- [x] `frontend/src/api/client.ts` / `types.ts` / `components/DeviceBar.tsx` / `components/PagePlaceholder.tsx`
+- [x] `run_dev.sh`：backend(:8000) ＋ frontend(:5173) 同時起動
+- [x] テスト：`backend/tests/`（meta API・ジョブ基盤・Detector キャッシュ）＋ `frontend`（nav・エラー整形）
+- [x] CI に `frontend`（tsc + vitest + build）ジョブを追加し、`auto-merge` を `[build, frontend]` に依存させる
+
+> R0 時点では 5 画面すべてがプレースホルダ。**実機能は Streamlit 版（`streamlit run app/Home.py`）が引き続き担当**する。
 
 ### R1. 解析画面（`views/analyze.py` → `AnalyzePage.tsx`）— 最重要
 - [ ] `POST /api/analyze/upload`：mp4/mov/avi を一時ディレクトリへ保存し `upload_id` を返す（サイズ上限・拡張子検証）
@@ -179,10 +184,10 @@ frontend/
 - [ ] 受け入れ基準：`docs/manual/02_realtime.md`
 
 ### R6. 仕上げ
-- [ ] `backend/tests/`：schemas・ジョブ基盤・ゾーン JSON パース・パス検証など**重い依存なしで通る**テスト（既存 `tests/` の方針を踏襲）
+- [ ] `backend/tests/`：各 API のスキーマ・ゾーン JSON パース・パス検証を R1〜R5 の実装に合わせて追加
 - [ ] `frontend/src/**/*.test.ts(x)`：`jobReducer`・設定連動ロジック（セグ→モデル一覧、追跡→ゾーン可否）を vitest で
-- [ ] `ruff check .`（line-length 120 / py312）を backend にも通す
-- [ ] CI ワークフロー追加：`ruff` / `pytest` / `frontend(tsc + vitest + build)`
+- [x] `ruff check .`（line-length 120 / py312）を backend にも通す
+- [x] CI ワークフロー：`ruff` / `pytest`（tests + backend/tests）/ `frontend(tsc + vitest + build)`
 - [ ] ドキュメント更新：`docs/manual/*` の「起動方法」を React 版へ、`frontend/docs/<Component>.md`・`backend/docs/` を規約に沿って追加、`README.md` の起動手順
 - [ ] Streamlit 版の去就を決定：**全画面パリティ達成までは併存**（`app/` は残す）→ 達成後に削除 or `legacy_streamlit/` へ退避（削除は要ユーザ確認）
 
