@@ -58,3 +58,98 @@ export interface JobStatus<T = Record<string, unknown>> {
   result: T | null;
   error: string | null;
 }
+
+// ---------------------------------------------------------------------------
+// 解析画面（app/views/analyze.py 相当）
+// ---------------------------------------------------------------------------
+
+/** POST /api/analyze/upload */
+export interface UploadInfo {
+  upload_id: string;
+  filename: string;
+  size: number;
+}
+
+/** ゾーン定義（正規化座標 0〜1） */
+export interface ZoneInput {
+  name: string;
+  polygon: [number, number][];
+}
+
+/** POST /api/analyze/run */
+export interface AnalyzeRequest {
+  upload_id: string;
+  enable_seg: boolean;
+  enable_track: boolean;
+  enable_zone: boolean;
+  model_name: string;
+  conf: number;
+  /** null は「全クラス（COCO 80）」 */
+  classes: number[] | null;
+  frame_stride: number;
+  trace_length: number;
+  zones: ZoneInput[];
+}
+
+/** クラス別集計（`pipeline.detections.summarize`） */
+export interface ClassStat {
+  total: number;
+  max_in_frame: number;
+}
+
+/** ゾーン別集計（`pipeline.zones.ZoneAnalyzer.summary`） */
+export interface ZoneStat {
+  unique_tracks: number;
+  intrusions: number;
+  max_occupancy: number;
+  total_dwell_sec: number;
+  max_dwell_sec: number;
+}
+
+/** ID 別滞留時間 */
+export interface TrackDwell {
+  zone: string;
+  tracker_id: number;
+  dwell_sec: number;
+}
+
+/** GET /api/analyze/result/{job_id} の result（検出レコードは含まない） */
+export interface AnalyzeResultSummary {
+  run_id: string;
+  stem: string;
+  video_url: string | null;
+  frames_processed: number;
+  frames_total: number;
+  fps: number;
+  width: number;
+  height: number;
+  duration_sec: number;
+  total_detections: number;
+  unique_track_ids: number;
+  stats: Record<string, ClassStat>;
+  zone_summary: Record<string, ZoneStat>;
+  per_track_dwell: TrackDwell[];
+  total_records: number;
+}
+
+/** 検出結果 1 行（`pipeline.detections.DetectionRecord`） */
+export interface DetectionRecord {
+  frame: number;
+  time_sec: number;
+  class_id: number;
+  class_name: string;
+  confidence: number;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  tracker_id: number | null;
+}
+
+/** GET /api/analyze/detections/{job_id} */
+export interface DetectionPage {
+  total: number;
+  offset: number;
+  limit: number;
+  records: DetectionRecord[];
+}

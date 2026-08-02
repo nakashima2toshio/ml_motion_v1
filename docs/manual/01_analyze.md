@@ -1,6 +1,19 @@
 # 🎥 解析画面 操作マニュアル
 
-**画面**: 左ナビ「解析」（`app/views/analyze.py`）／ 既定で最初に開く画面。
+**画面**: 左ナビ「解析」／ 既定で最初に開く画面。
+
+> **UI は 2 種類あります（移行期）。操作手順・結果の見方は同じです。**
+>
+> | UI | 起動 | 実体 |
+> |---|---|---|
+> | React（推奨） | `./run_dev.sh` → http://localhost:5173 | `frontend/src/pages/AnalyzePage.tsx` + `backend/app/api/analyze.py` |
+> | Streamlit（従来） | `streamlit run app/Home.py` → http://localhost:8501 | `app/views/analyze.py` |
+>
+> React 版の相違点:
+> - 設定は左サイドバーではなく**画面内の左パネル**にあります。
+> - **検出結果テーブルは 1000 件ずつのページング**です（全件は「⬇ CSV」「⬇ JSON」でダウンロード）。
+>
+> 移行計画は [`docs/react_migration_todo.md`](../react_migration_todo.md)。
 
 ## 目的
 mp4 動画を YOLO11 で物体検出し、必要に応じて**セグメンテーション・トラッキング（ID付与）・ゾーン解析（滞留/侵入）**を行い、
