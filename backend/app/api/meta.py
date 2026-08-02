@@ -11,6 +11,7 @@ from fastapi import APIRouter
 
 from backend.app.schemas import DeviceInfo, OptionsResponse
 from pipeline.camera import LIGHTWEIGHT_MODELS, RESOLUTION_PRESETS
+from pipeline.claude_vision import DEFAULT_MODEL as CLAUDE_MODEL
 from pipeline.detections import COCO_COMMON, FIELDS
 from pipeline.detector import AVAILABLE_MODELS, SEG_MODELS
 from pipeline.device import describe_device
@@ -47,4 +48,5 @@ def get_options() -> OptionsResponse:
         registry_stages=list(STAGES),
         default_experiment=DEFAULT_EXPERIMENT,
         detection_fields=list(FIELDS),
+        claude_model=CLAUDE_MODEL,
     )

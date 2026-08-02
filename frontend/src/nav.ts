@@ -58,7 +58,7 @@ export const PAGES: PageDef[] = [
     icon: '🏷',
     streamlitView: 'app/views/annotation_qa.py',
     phase: 'R2',
-    implemented: false,
+    implemented: true,
   },
 ];
 

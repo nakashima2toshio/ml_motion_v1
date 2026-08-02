@@ -156,10 +156,13 @@ frontend/
 > 検出結果テーブルは既定 1000 件ずつのページング。全件はブラウザを固めるため
 > **CSV / JSON のダウンロードへ誘導**する（`DEFAULT_PAGE_SIZE` / `MAX_PAGE_SIZE`）。
 
-### R2. アノテーションQA（`views/annotation_qa.py` → `AnnotationQaPage.tsx`）— 最小・先に片付ける
-- [ ] `POST /api/annotation/review`：画像 multipart ＋ `labels[]` → `review_annotation()` の Markdown を返す
-- [ ] React 側：画像プレビュー・ラベル入力・レビュー実行・Markdown レンダリング（`grace_v2` の `components/Markdown.tsx` を流用）
-- [ ] 受け入れ基準：`docs/manual/05_annotation_qa.md`
+### R2. アノテーションQA（`views/annotation_qa.py` → `AnnotationQaPage.tsx`）✅ 完了
+- [x] `POST /api/annotation/review`：画像 multipart ＋ `labels`（カンマ区切り）→ `review_annotation()` の Markdown を返す
+      （画像は保存せずメモリで処理。拡張子・サイズ上限 5 MB・ラベル正規化を検証）
+- [x] `GET /api/meta/options` に `claude_model` を追加（実行前にモデル名を表示するため）
+- [x] React 側：画像プレビュー・ラベル入力・レビュー実行・Markdown レンダリング
+      （`grace_v2` の `markdown/parseMarkdown.ts` + `components/Markdown.tsx` を移植）
+- [x] 受け入れ基準：`docs/manual/05_annotation_qa.md`（成功時の Markdown 描画・`ANTHROPIC_API_KEY` 未設定時の案内をブラウザで確認）
 
 ### R3. 実験管理（`views/experiments.py` → `ExperimentsPage.tsx`）
 - [ ] `GET /api/experiments/runs?experiment=`：`list_runs` / `format_runs_table` / `best_run`、MLflow 未起動時は 503 ＋ docker-compose 起動案内
