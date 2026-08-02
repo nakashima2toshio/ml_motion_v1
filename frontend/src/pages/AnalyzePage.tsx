@@ -125,7 +125,7 @@ export function AnalyzePage(): JSX.Element {
       return;
     }
 
-    dispatch({ type: 'start', jobId: accepted.job_id });
+    dispatch({ type: 'start', jobId: accepted.job_id, message: '解析中…' });
     unsubscribeRef.current?.();
     unsubscribeRef.current = subscribeJob(
       'analyze',

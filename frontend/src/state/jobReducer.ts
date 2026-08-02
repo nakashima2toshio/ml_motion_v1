@@ -27,7 +27,8 @@ export const initialJobState: JobState = {
 };
 
 export type JobAction =
-  | { type: 'start'; jobId: string }
+  /** `message` は進捗イベントが来るまでの表示（画面ごとに「解析中…」「処理中…」等） */
+  | { type: 'start'; jobId: string; message?: string }
   | { type: 'event'; event: JobEvent }
   | { type: 'fail'; message: string }
   | { type: 'reset' };
@@ -35,7 +36,12 @@ export type JobAction =
 export function jobReducer(state: JobState, action: JobAction): JobState {
   switch (action.type) {
     case 'start':
-      return { ...initialJobState, status: 'running', jobId: action.jobId, message: '解析中…' };
+      return {
+        ...initialJobState,
+        status: 'running',
+        jobId: action.jobId,
+        message: action.message ?? '実行中…',
+      };
 
     case 'fail':
       return { ...state, status: 'failed', error: action.message };
@@ -51,7 +57,7 @@ export function jobReducer(state: JobState, action: JobAction): JobState {
 function applyEvent(state: JobState, event: JobEvent): JobState {
   switch (event.type) {
     case 'started':
-      return { ...state, status: 'running', message: event.message || '解析中…' };
+      return { ...state, status: 'running', message: event.message || state.message };
 
     case 'progress': {
       const frames = toProgress(event.data);
@@ -83,10 +89,16 @@ function toProgress(data: Record<string, unknown>): JobProgress | null {
   return { current, total };
 }
 
-/** 進捗バーのラベル（Streamlit 版「解析中… n/total フレーム」と同じ）。 */
-export function progressLabel(state: JobState): string {
+/**
+ * 進捗バーのラベル。
+ *
+ * 解析画面は Streamlit 版と同じ「解析中… n/total フレーム」、
+ * バッチ画面は「処理中… n/total ファイル」のように単位が違うため、
+ * 接頭辞と単位を呼び出し側から渡す。
+ */
+export function progressLabel(state: JobState, prefix = '解析中…', unit = 'フレーム'): string {
   if (state.frames && state.frames.total > 0) {
-    return `解析中… ${state.frames.current}/${state.frames.total} フレーム`;
+    return `${prefix} ${state.frames.current}/${state.frames.total} ${unit}`;
   }
-  return state.message || '解析中…';
+  return state.message || prefix;
 }

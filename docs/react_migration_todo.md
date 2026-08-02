@@ -180,13 +180,16 @@ frontend/
 > コールバックは括弧を除去して `metrics/mAP50B` の形で記録するため、Run 一覧の mAP 列は
 > 常に 0.0、最良 Run も出ない。**Streamlit 版でも同じ**。詳細は `docs/known_issues.md`。
 
-### R4. 本番/最適化（`views/production.py` → `ProductionPage.tsx`）
-- [ ] `POST /api/production/discover`：`discover_media`（**パストラバーサル対策**：許可ルート配下に限定）
-- [ ] `POST /api/production/batch`：`run_batch` をジョブ実行＋SSE 進捗、完了時 `build_manifest`
-- [ ] `POST /api/production/export`：`export_model`（fmt / FP32・FP16・INT8）
-- [ ] `GET /api/production/registry-uri`：`model_uri(name, stage)`
-- [ ] React 側：入出力ディレクトリ・モデル/信頼度/間引き・マニフェスト表・変換フォーム・計測の説明ブロック
-- [ ] 受け入れ基準：`docs/manual/04_production.md`
+### R4. 本番/最適化（`views/production.py` → `ProductionPage.tsx`）✅ 完了
+- [x] **`core/paths.py`（パストラバーサル対策）**：ユーザー入力のパスを**リポジトリルート配下に限定**し、
+      外を指したら 400。シンボリックリンク経由の抜け道も実パスで判定して塞ぐ。
+      リポジトリ外を使いたい場合は環境変数 `ML_MOTION_ALLOWED_ROOTS`（`os.pathsep` 区切り）で追加できる
+- [x] `POST /api/production/discover`：`discover_media`（結果はリポジトリ相対で返す＝絶対パスを画面に出さない）
+- [x] `POST /api/production/batch`：`run_batch` をジョブ実行＋SSE 進捗（ファイル単位）、完了時 `build_manifest`
+- [x] `POST /api/production/export`：`export_model`（fmt / FP32・FP16・INT8）
+- [x] `GET /api/production/registry-uri`：`model_uri(name, stage)`（ステージ名の正規化はサーバ側に集約）
+- [x] React 側：入出力ディレクトリ・モデル/信頼度/間引き・マニフェスト表・変換フォーム・計測の説明ブロック
+- [x] 受け入れ基準：`docs/manual/04_production.md`（実 YOLO11n で動画 2 本のバッチ推論を通して確認）
 
 ### R5. リアルタイム（`views/realtime.py` → `RealtimePage.tsx`）— 最難
 - [ ] 経路1（Continuity Camera）：`GET /api/realtime/mjpeg?...` で `open_camera` → `FrameProcessor.process` → JPEG エンコード → `multipart/x-mixed-replace` 配信。`<img src>` で表示
