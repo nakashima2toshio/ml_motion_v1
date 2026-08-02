@@ -52,7 +52,8 @@ def get_config() -> ExperimentsConfig:
 @router.get("/runs", response_model=RunsResponse)
 def get_runs(experiment: str = Query(default=DEFAULT_EXPERIMENT)) -> RunsResponse:
     """Run 一覧と最良 Run。MLflow へ繋がらないときは 503 に起動案内を載せる。"""
-    from pipeline.experiments import best_run, format_runs_table, list_runs  # 遅延 import（mlflow）
+    # 遅延 import（mlflow）
+    from pipeline.experiments import best_run, format_runs_table, list_runs, metric_value
 
     uri = tracking_uri()
     if not is_mlflow_reachable(uri):
@@ -68,7 +69,9 @@ def get_runs(experiment: str = Query(default=DEFAULT_EXPERIMENT)) -> RunsRespons
     top = best_run(runs)
     best_metric = None
     if top is not None:
-        best_metric = round(float(top["metrics"].get("metrics/mAP50-95(B)", 0.0)), 4)
+        # ⚠️ 直接 `.get()` しない。MLflow に保存された名前は括弧が落ちているため
+        # （docs/known_issues.md #1）、`metric_value` で両方の形に対応する。
+        best_metric = round(metric_value(top["metrics"], "metrics/mAP50-95(B)"), 4)
 
     return RunsResponse(
         experiment=experiment,

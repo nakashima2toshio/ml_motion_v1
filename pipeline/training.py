@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from pipeline.device import get_device
-from pipeline.experiments import DEFAULT_EXPERIMENT, tracking_uri
+from pipeline.experiments import DEFAULT_EXPERIMENT, sanitize_metric_name, tracking_uri
 
 
 @dataclass
@@ -85,13 +85,19 @@ def train(config: TrainConfig) -> TrainResult:
 
 
 def _extract_metrics(results) -> dict:
-    """ultralytics の学習結果から float 化できるスカラーメトリクスを取り出す。"""
+    """ultralytics の学習結果から float 化できるスカラーメトリクスを取り出す。
+
+    ⚠️ キーは `sanitize_metric_name` で正規化する。ultralytics の `results_dict` は
+    `metrics/mAP50(B)` のように括弧を含むが、**MLflow はメトリクス名に括弧を許さない**
+    （`INVALID_PARAMETER_VALUE`）ため、そのまま `log_metrics()` に渡すと失敗する。
+    ultralytics の MLflow コールバックと同じ正規化を行い、記録名を揃える。
+    """
     metrics: dict = {}
     results_dict = getattr(results, "results_dict", None)
     if isinstance(results_dict, dict):
         for k, v in results_dict.items():
             try:
-                metrics[k] = float(v)
+                metrics[sanitize_metric_name(k)] = float(v)
             except (TypeError, ValueError):
                 continue
     return metrics

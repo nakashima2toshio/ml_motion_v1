@@ -3,9 +3,14 @@
 移行作業中に見つかった、**移行前から存在する**（React 化とは無関係の）問題を記録する。
 いずれも Streamlit 版・React 版の両方に影響する。
 
+| # | 内容 | 状態 |
+|---|---|---|
+| 1 | MLflow のメトリクス名に括弧が使えず、mAP 列が常に 0.0 | ✅ **修正済み** |
+| 2 | 注釈付き動画がブラウザで再生できないことがある（コーデック依存） | 未修正 |
+
 ---
 
-## 1. MLflow のメトリクス名に括弧が使えず、mAP 列が常に 0.0 になる
+## 1. MLflow のメトリクス名に括弧が使えず、mAP 列が常に 0.0 になる ✅ 修正済み
 
 **影響**: 実験管理画面の Run 一覧で `mAP50` / `mAP50-95` が常に `0`、最良 Run も表示されない。
 `pipeline.training.train()` は MLflow Tracking サーバへのメトリクス記録で例外になる可能性がある。
@@ -52,12 +57,18 @@ with mlflow.start_run(run_name="paren-test"):
     mlflow.log_metrics({"metrics/mAP50-95(B)": 0.5})   # → INVALID_PARAMETER_VALUE
 ```
 
-**想定される修正方針**（未着手・`pipeline/` の変更を伴うため要判断）:
+**修正内容**:
 
-- `pipeline/experiments.py` の参照キーを ultralytics の記録形（括弧なし）に合わせる。
-  併せて、括弧あり／なしの両方を探すフォールバックを入れると過去 Run とも互換になる。
-- `pipeline/training.py::_extract_metrics` でもキーから括弧を除去してから記録する
-  （ultralytics のコールバックと同じ正規化を行う）。
+- `pipeline/experiments.py` に `sanitize_metric_name()` / `metric_value()` / `has_metric()` を追加。
+  `format_runs_table` と `best_run` は `metric_value()` 経由で読むようにし、
+  **括弧あり・括弧なしの両方**に対応した（過去 Run とも互換）。
+- `pipeline/training.py::_extract_metrics` はキーを正規化してから返すようにした。
+  これで `mlflow.log_metrics()` が Tracking サーバでも成功する。
+- `backend/app/api/experiments.py` の `best_metric` も `metric_value()` 経由に統一した。
+
+**回帰テスト**: `tests/test_metric_names.py`（修正前のコードでは
+`format_runs_table` が 0.0、`best_run` が None、`_extract_metrics` が括弧つきを返すことを確認済み）。
+実 MLflow サーバ（2.22.5）へ記録 → 読み出しの往復も確認した。
 
 ---
 

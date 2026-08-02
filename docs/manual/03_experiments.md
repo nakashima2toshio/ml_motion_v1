@@ -9,9 +9,6 @@
 > | React（推奨） | `./run_dev.sh` → http://localhost:5173/experiments | `frontend/src/pages/ExperimentsPage.tsx` + `backend/app/api/experiments.py` |
 > | Streamlit（従来） | `streamlit run app/Home.py` → http://localhost:8501 | `app/views/experiments.py` |
 >
-> ⚠️ **Run 一覧の mAP 列が 0 になる既知の不具合があります**（移行前から。Streamlit 版も同様）。
-> 原因と対処方針は [`docs/known_issues.md`](../known_issues.md) を参照してください。
->
 > 移行計画は [`docs/react_migration_todo.md`](../react_migration_todo.md)。
 
 ## 目的

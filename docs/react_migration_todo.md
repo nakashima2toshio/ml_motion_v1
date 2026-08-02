@@ -174,11 +174,8 @@ frontend/
 - [x] React 側：Run 表・最良 Run バッジ・学習フォーム・`data.yaml` 生成・Registry 説明（「Claude自動レビュー(P6)」は現行どおり disabled）
 - [x] 受け入れ基準：`docs/manual/03_experiments.md`（実 MLflow サーバに実 Run を登録して確認）
 
-> ⚠️ **既知の不具合（`pipeline/` 側・移行前から存在）**: `pipeline/experiments.py` が探すメトリクス名
-> `metrics/mAP50(B)` / `metrics/mAP50-95(B)` は **MLflow Tracking サーバに保存できない**
-> （メトリクス名に括弧を使えず `INVALID_PARAMETER_VALUE` になる）。ultralytics の MLflow
-> コールバックは括弧を除去して `metrics/mAP50B` の形で記録するため、Run 一覧の mAP 列は
-> 常に 0.0、最良 Run も出ない。**Streamlit 版でも同じ**。詳細は `docs/known_issues.md`。
+> ℹ️ 移行中に見つかった `pipeline/` 側の不具合（MLflow のメトリクス名に括弧が使えず
+> mAP 列が常に 0.0 になる）は**修正済み**。詳細は `docs/known_issues.md` #1。
 
 ### R4. 本番/最適化（`views/production.py` → `ProductionPage.tsx`）✅ 完了
 - [x] **`core/paths.py`（パストラバーサル対策）**：ユーザー入力のパスを**リポジトリルート配下に限定**し、
