@@ -273,3 +273,35 @@ export interface RegistryUri {
   stages: string[];
   formats: string[];
 }
+
+// ---------------------------------------------------------------------------
+// リアルタイム解析（app/views/realtime.py 相当）
+// ---------------------------------------------------------------------------
+
+/** GET /api/realtime/settings */
+export interface RealtimeSettingsResponse {
+  model_name: string;
+  requested_model: string;
+  auto_switched: boolean;
+  width: number;
+  height: number;
+  /** 画面に出す注意書き（自動切替・重いモデル） */
+  notes: string[];
+  camera_busy: boolean;
+}
+
+/** GET /api/realtime/stats */
+export interface RealtimeStats {
+  running: boolean;
+  fps: number;
+  n_detections: number;
+  frame_index: number;
+  model_name: string;
+  elapsed_sec: number;
+}
+
+/** WebSocket（経路2）でサーバから届くメッセージ */
+export type RealtimeMessage =
+  | { type: 'ready'; model_name: string; notes: string[] }
+  | { type: 'stats'; fps: number; n_detections: number; frame_index: number }
+  | { type: 'error'; message: string };

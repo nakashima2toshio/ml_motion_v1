@@ -613,3 +613,13 @@ input[type="range"] {
   gap: 28px;
   margin: 12px 0;
 }
+
+/* ---- リアルタイム画面 ---- */
+.realtime-layout {
+  grid-template-columns: 300px minmax(0, 1fr);
+}
+
+/* 送信用に保持するが画面には出さない要素（video/canvas） */
+.hidden-media {
+  display: none;
+}

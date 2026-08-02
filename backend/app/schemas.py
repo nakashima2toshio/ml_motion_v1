@@ -200,6 +200,45 @@ class DatasetYamlResponse(BaseModel):
 
 
 # =============================================================================
+# リアルタイム解析（app/views/realtime.py 相当）
+# =============================================================================
+
+
+class RealtimeSettingsResponse(BaseModel):
+    """`GET /api/realtime/settings`。解決後のモデルと注意書き。"""
+
+    model_name: str = Field(description="実際に使うモデル（軽量自動切替の結果）")
+    requested_model: str
+    auto_switched: bool
+    width: int
+    height: int
+    notes: list[str] = Field(description="画面に出す注意書き（自動切替・重いモデル）")
+    camera_busy: bool = Field(description="サーバ側カメラが既に使用中か")
+
+    # `model_` 始まりのフィールド名は pydantic の予約語と紛らわしいため警告を止める。
+    model_config = {"protected_namespaces": ()}
+
+
+class RealtimeStatsResponse(BaseModel):
+    """`GET /api/realtime/stats`。配信中のライブ統計。"""
+
+    running: bool
+    fps: float
+    n_detections: int
+    frame_index: int
+    model_name: str
+    elapsed_sec: float
+
+    model_config = {"protected_namespaces": ()}
+
+
+class StopResponse(BaseModel):
+    """`POST /api/realtime/stop`。"""
+
+    stopped: bool
+
+
+# =============================================================================
 # 本番化・最適化（app/views/production.py 相当）
 # =============================================================================
 

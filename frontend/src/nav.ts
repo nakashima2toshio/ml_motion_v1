@@ -34,7 +34,7 @@ export const PAGES: PageDef[] = [
     icon: '📡',
     streamlitView: 'app/views/realtime.py',
     phase: 'R5',
-    implemented: false,
+    implemented: true,
   },
   {
     path: '/experiments',
