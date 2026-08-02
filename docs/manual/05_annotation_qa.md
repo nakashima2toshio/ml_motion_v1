@@ -1,5 +1,15 @@
 # 🏷 アノテーションQA画面 操作マニュアル
 
+> **UI は 2 種類あります（移行期）。操作手順・結果の見方は同じです。**
+>
+> | UI | 起動 | 実体 |
+> |---|---|---|
+> | React（推奨） | `./run_dev.sh` → http://localhost:5173/annotation-qa | `frontend/src/pages/AnnotationQaPage.tsx` + `backend/app/api/annotation.py` |
+> | Streamlit（従来） | `streamlit run app/Home.py` → http://localhost:8501 | `app/views/annotation_qa.py` |
+>
+> React 版は画像を **5 MB まで**受け付けます（Claude の画像上限に合わせています）。
+> 移行計画は [`docs/react_migration_todo.md`](../react_migration_todo.md)。
+
 **画面**: 左ナビ「アノテーションQA」（`app/views/annotation_qa.py`）。
 
 ## 目的

@@ -418,6 +418,77 @@ input[type="range"] {
   white-space: pre-wrap;
 }
 
+/* ---- 2 カラムレイアウト（アノテーション QA 等） ---- */
+.two-column {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.preview-image {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+/* ---- Markdown ---- */
+.markdown-body {
+  font-size: 13.5px;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  margin: 18px 0 6px;
+  font-size: 15px;
+}
+
+.markdown-body p {
+  margin: 8px 0;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  margin: 8px 0;
+  padding-left: 22px;
+}
+
+.markdown-body blockquote {
+  margin: 8px 0;
+  padding: 2px 12px;
+  border-left: 3px solid var(--border);
+  color: var(--text-muted);
+}
+
+.markdown-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+.markdown-table-wrap {
+  overflow-x: auto;
+}
+
+.markdown-body table {
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--border);
+  padding: 5px 9px;
+  text-align: left;
+}
+
+.markdown-body th {
+  background: var(--bg-raised);
+}
+
 /* ---- 表 ---- */
 .table-scroll {
   overflow-x: auto;
@@ -482,7 +553,8 @@ input[type="range"] {
 }
 
 @media (max-width: 1200px) {
-  .analyze-layout {
+  .analyze-layout,
+  .two-column {
     grid-template-columns: 1fr;
   }
 }

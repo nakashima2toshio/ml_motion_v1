@@ -28,6 +28,7 @@ export interface Options {
   registry_stages: string[];
   default_experiment: string;
   detection_fields: string[];
+  claude_model: string;
 }
 
 /** ジョブ起動（202） */
@@ -152,4 +153,17 @@ export interface DetectionPage {
   offset: number;
   limit: number;
   records: DetectionRecord[];
+}
+
+// ---------------------------------------------------------------------------
+// アノテーション QA（app/views/annotation_qa.py 相当）
+// ---------------------------------------------------------------------------
+
+/** POST /api/annotation/review */
+export interface AnnotationReview {
+  /** Claude Vision のレビュー結果（Markdown） */
+  review: string;
+  model: string;
+  /** サーバ側で正規化された提案ラベル */
+  labels: string[];
 }

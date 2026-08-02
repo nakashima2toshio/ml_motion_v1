@@ -4,7 +4,7 @@
  * dev は Vite のプロキシで同一オリジンに見えるため、既定のベース URL は空文字。
  * 別ポート/別ホストの API を叩くときだけ `VITE_API_BASE` を設定する。
  */
-import type { DeviceInfo, Health, JobEvent, JobStatus, Options, UploadInfo } from '../types';
+import type { AnnotationReview, DeviceInfo, Health, JobEvent, JobStatus, Options, UploadInfo } from '../types';
 
 export const API_BASE: string = import.meta.env.VITE_API_BASE ?? '';
 
@@ -67,6 +67,14 @@ export function uploadVideo(file: File): Promise<UploadInfo> {
   form.append('file', file);
   // Content-Type は boundary 付きでブラウザに決めさせる（自分で指定しない）。
   return request<UploadInfo>('/api/analyze/upload', { method: 'POST', body: form });
+}
+
+/** アノテーション QA: 画像＋提案ラベルを Claude Vision でレビューする。 */
+export function reviewAnnotation(file: File, labels: string): Promise<AnnotationReview> {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('labels', labels);
+  return request<AnnotationReview>('/api/annotation/review', { method: 'POST', body: form });
 }
 
 export const getHealth = (): Promise<Health> => request<Health>('/api/health');

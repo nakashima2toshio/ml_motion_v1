@@ -25,6 +25,7 @@ const OPTIONS: Options = {
   registry_stages: ['None', 'Staging'],
   default_experiment: 'ml_motion_detection',
   detection_fields: ['frame', 'time_sec'],
+  claude_model: 'claude-opus-4-8',
 };
 
 describe('既定値', () => {

@@ -46,6 +46,7 @@ class OptionsResponse(BaseModel):
     registry_stages: list[str] = Field(description="Model Registry のステージ")
     default_experiment: str = Field(description="MLflow の既定実験名")
     detection_fields: list[str] = Field(description="検出結果テーブルの列順")
+    claude_model: str = Field(description="Claude Vision / 要約に使うモデル")
 
 
 class JobAccepted(BaseModel):
@@ -146,3 +147,16 @@ class SummaryResponse(BaseModel):
     """`POST /api/analyze/summary/{job_id}`（📝 NL要約）。"""
 
     summary: str
+
+
+# =============================================================================
+# アノテーション QA（app/views/annotation_qa.py 相当）
+# =============================================================================
+
+
+class AnnotationReviewResponse(BaseModel):
+    """`POST /api/annotation/review`（🔍 Claude でレビュー）。"""
+
+    review: str = Field(description="Claude Vision のレビュー結果（Markdown）")
+    model: str = Field(description="使用した Claude モデル")
+    labels: list[str] = Field(description="正規化後の提案ラベル")

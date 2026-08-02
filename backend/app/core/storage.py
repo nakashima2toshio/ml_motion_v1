@@ -25,8 +25,14 @@ from typing import BinaryIO
 # 受け付ける動画の拡張子（Streamlit 版 `st.file_uploader(type=[...])` と一致させる）。
 ALLOWED_VIDEO_SUFFIXES: frozenset[str] = frozenset({".mp4", ".mov", ".avi"})
 
+# アノテーション QA で受け付ける画像の拡張子（同上）。
+ALLOWED_IMAGE_SUFFIXES: frozenset[str] = frozenset({".jpg", ".jpeg", ".png", ".webp"})
+
 # アップロード 1 件のサイズ上限。ローカル用途なので大きめだが、無制限にはしない。
 MAX_UPLOAD_BYTES = 2 * 1024 * 1024 * 1024  # 2 GiB
+
+# 画像の上限。Claude の画像 1 枚あたりの上限（約 5 MB）に合わせる。
+MAX_IMAGE_BYTES = 5 * 1024 * 1024
 
 # 保持する世代数（超えたら古い順に削除）。
 MAX_UPLOADS = 10
@@ -103,6 +109,29 @@ def validate_video_suffix(filename: str) -> str:
         allowed = " / ".join(sorted(ALLOWED_VIDEO_SUFFIXES))
         raise StorageError(f"未対応のファイル形式です: {suffix or '(拡張子なし)'}（対応: {allowed}）")
     return suffix
+
+
+def validate_image_suffix(filename: str) -> str:
+    """画像の拡張子を検証して小文字で返す。未対応なら StorageError。"""
+    suffix = Path(filename).suffix.lower()
+    if suffix not in ALLOWED_IMAGE_SUFFIXES:
+        allowed = " / ".join(sorted(ALLOWED_IMAGE_SUFFIXES))
+        raise StorageError(f"未対応の画像形式です: {suffix or '(拡張子なし)'}（対応: {allowed}）")
+    return suffix
+
+
+def read_image_upload(stream: BinaryIO, filename: str) -> bytes:
+    """画像アップロードを検証してメモリに読み込む（ディスクには置かない）。
+
+    アノテーション QA は 1 枚を Claude に渡して終わりなので、保存しない。
+    """
+    validate_image_suffix(filename)
+    data = stream.read(MAX_IMAGE_BYTES + 1)
+    if not data:
+        raise StorageError("空のファイルです")
+    if len(data) > MAX_IMAGE_BYTES:
+        raise StorageError(f"画像が大きすぎます（上限 {MAX_IMAGE_BYTES // (1024 * 1024)} MB）")
+    return data
 
 
 def save_upload(stream: BinaryIO, filename: str, chunk_size: int = 1024 * 1024) -> UploadRef:
