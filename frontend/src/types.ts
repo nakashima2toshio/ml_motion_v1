@@ -167,3 +167,53 @@ export interface AnnotationReview {
   /** サーバ側で正規化された提案ラベル */
   labels: string[];
 }
+
+// ---------------------------------------------------------------------------
+// 実験管理（app/views/experiments.py 相当）
+// ---------------------------------------------------------------------------
+
+/** GET /api/experiments/config */
+export interface ExperimentsConfig {
+  tracking_uri: string;
+  default_experiment: string;
+  key_metrics: string[];
+}
+
+/** Run 一覧の 1 行（pipeline.experiments.format_runs_table の出力） */
+export interface RunRow {
+  run: string;
+  status: string;
+  mAP50: number;
+  'mAP50-95': number;
+}
+
+/** GET /api/experiments/runs */
+export interface RunsResponse {
+  experiment: string;
+  rows: RunRow[];
+  best_run_name: string | null;
+  best_metric: number | null;
+}
+
+/** POST /api/experiments/train */
+export interface TrainRequest {
+  data_yaml: string;
+  base_model: string;
+  epochs: number;
+  experiment: string | null;
+  run_name: string | null;
+}
+
+/** 学習ジョブの結果 */
+export interface TrainResult {
+  run_id: string;
+  best_weights: string;
+  metrics: Record<string, number>;
+  experiment: string;
+}
+
+/** POST /api/experiments/dataset-yaml */
+export interface DatasetYaml {
+  yaml: string;
+  classes: string[];
+}

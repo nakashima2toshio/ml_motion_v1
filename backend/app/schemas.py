@@ -150,6 +150,56 @@ class SummaryResponse(BaseModel):
 
 
 # =============================================================================
+# 実験管理（app/views/experiments.py 相当）
+# =============================================================================
+
+
+class ExperimentsConfig(BaseModel):
+    """`GET /api/experiments/config`。"""
+
+    tracking_uri: str
+    default_experiment: str
+    key_metrics: list[str]
+
+
+class RunsResponse(BaseModel):
+    """`GET /api/experiments/runs`。
+
+    `rows` は `pipeline.experiments.format_runs_table` の出力そのもの
+    （`run` / `status` / `mAP50` / `mAP50-95`）。列は pipeline 側の定義に従う。
+    """
+
+    experiment: str
+    rows: list[dict] = Field(description="表示用に整形済みの Run 行")
+    best_run_name: str | None = None
+    best_metric: float | None = Field(default=None, description="最良 Run の mAP50-95")
+
+
+class TrainRequest(BaseModel):
+    """`POST /api/experiments/train`（▶ 学習を開始）。"""
+
+    data_yaml: str = Field(default="data/datasets/custom/data.yaml", min_length=1)
+    base_model: str = "yolo11s.pt"
+    epochs: int = Field(default=50, ge=1, le=1000)
+    experiment: str | None = None
+    run_name: str | None = None
+
+
+class DatasetYamlRequest(BaseModel):
+    """`POST /api/experiments/dataset-yaml`。"""
+
+    name: str = Field(default="custom", min_length=1)
+    classes: str = Field(description="カンマ区切りのクラス名（並び順がクラス ID になる）")
+
+
+class DatasetYamlResponse(BaseModel):
+    """生成した `data.yaml`。"""
+
+    yaml: str
+    classes: list[str]
+
+
+# =============================================================================
 # アノテーション QA（app/views/annotation_qa.py 相当）
 # =============================================================================
 

@@ -22,7 +22,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.app.api import analyze, annotation, media, meta
+from backend.app.api import analyze, annotation, experiments, media, meta
 from backend.app.schemas import HealthResponse
 
 # .env から ANTHROPIC_API_KEY 等を読み込む（未導入でも続行）。
@@ -60,6 +60,7 @@ app.add_middleware(
 app.include_router(meta.router)
 app.include_router(analyze.router)
 app.include_router(annotation.router)
+app.include_router(experiments.router)
 app.include_router(media.router)
 
 

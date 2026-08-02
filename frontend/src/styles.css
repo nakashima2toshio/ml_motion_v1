@@ -575,3 +575,34 @@ input[type="range"] {
     padding: 24px 18px 48px;
   }
 }
+
+/* ---- フォーム行・コードブロック（実験管理 / 本番化） ---- */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.field-inline {
+  max-width: 420px;
+}
+
+.code-block {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 12px;
+  font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.alert-ok {
+  background: rgba(46, 160, 67, 0.14);
+  border-color: #2ea043;
+}
+
+.page .panel {
+  margin-bottom: 8px;
+}

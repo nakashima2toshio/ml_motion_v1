@@ -164,12 +164,21 @@ frontend/
       （`grace_v2` の `markdown/parseMarkdown.ts` + `components/Markdown.tsx` を移植）
 - [x] 受け入れ基準：`docs/manual/05_annotation_qa.md`（成功時の Markdown 描画・`ANTHROPIC_API_KEY` 未設定時の案内をブラウザで確認）
 
-### R3. 実験管理（`views/experiments.py` → `ExperimentsPage.tsx`）
-- [ ] `GET /api/experiments/runs?experiment=`：`list_runs` / `format_runs_table` / `best_run`、MLflow 未起動時は 503 ＋ docker-compose 起動案内
-- [ ] `POST /api/experiments/train`：`TrainConfig` → ジョブ実行（長時間・高負荷の警告文言は API/UI 双方に残す）
-- [ ] `POST /api/experiments/dataset-yaml`：`build_dataset_yaml`（コードブロック表示）
-- [ ] React 側：Run 表・最良 Run バッジ・学習フォーム・`data.yaml` アコーディオン・Registry 説明（「Claude自動レビュー(P6)」は現行どおり disabled）
-- [ ] 受け入れ基準：`docs/manual/03_experiments.md`
+### R3. 実験管理（`views/experiments.py` → `ExperimentsPage.tsx`）✅ 完了
+- [x] `GET /api/experiments/config`：Tracking URI・既定実験名
+- [x] `GET /api/experiments/runs?experiment=`：`list_runs` / `format_runs_table` / `best_run`、MLflow 未起動時は 503 ＋ docker-compose 起動案内
+- [x] **MLflow への疎通確認（`core/mlflow_probe.py`）**：MLflow クライアントは接続失敗時に約 4 分リトライするため、
+      先に 3 秒で疎通を確認して落ちていれば即 503 を返す（実測 4分6秒 → 0.016 秒）
+- [x] `POST /api/experiments/train`：`TrainConfig` → ジョブ実行（長時間・高負荷の警告文言は API/UI 双方に残す）＋ SSE
+- [x] `POST /api/experiments/dataset-yaml`：`build_dataset_yaml`（コードブロック表示・クラス順＝クラス ID）
+- [x] React 側：Run 表・最良 Run バッジ・学習フォーム・`data.yaml` 生成・Registry 説明（「Claude自動レビュー(P6)」は現行どおり disabled）
+- [x] 受け入れ基準：`docs/manual/03_experiments.md`（実 MLflow サーバに実 Run を登録して確認）
+
+> ⚠️ **既知の不具合（`pipeline/` 側・移行前から存在）**: `pipeline/experiments.py` が探すメトリクス名
+> `metrics/mAP50(B)` / `metrics/mAP50-95(B)` は **MLflow Tracking サーバに保存できない**
+> （メトリクス名に括弧を使えず `INVALID_PARAMETER_VALUE` になる）。ultralytics の MLflow
+> コールバックは括弧を除去して `metrics/mAP50B` の形で記録するため、Run 一覧の mAP 列は
+> 常に 0.0、最良 Run も出ない。**Streamlit 版でも同じ**。詳細は `docs/known_issues.md`。
 
 ### R4. 本番/最適化（`views/production.py` → `ProductionPage.tsx`）
 - [ ] `POST /api/production/discover`：`discover_media`（**パストラバーサル対策**：許可ルート配下に限定）
