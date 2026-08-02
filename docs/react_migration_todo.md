@@ -191,16 +191,20 @@ frontend/
 - [x] React 側：入出力ディレクトリ・モデル/信頼度/間引き・マニフェスト表・変換フォーム・計測の説明ブロック
 - [x] 受け入れ基準：`docs/manual/04_production.md`（実 YOLO11n で動画 2 本のバッチ推論を通して確認）
 
-### R5. リアルタイム（`views/realtime.py` → `RealtimePage.tsx`）— 最難
-- [ ] 経路1（Continuity Camera）：`GET /api/realtime/mjpeg?...` で `open_camera` → `FrameProcessor.process` → JPEG エンコード → `multipart/x-mixed-replace` 配信。`<img src>` で表示
-  - [ ] 開始/停止（クライアント切断でカメラ解放。**多重オープンを排他制御**）
-  - [ ] `frame_skip` / 解像度プリセット / 軽量モデル自動切替（`recommend_realtime_model`）の再現
-  - [ ] FPS・検出数の配信（別 SSE か MJPEG のヘッダ・サイドチャネル）— `FpsMeter` をサーバ側で使用
-  - [ ] 「ローカル実行（Mac 上）でのみ動作」という現行の制約表示を維持
-- [ ] 経路2（ブラウザカメラ）：`getUserMedia` → canvas で JPEG 化 → WebSocket 送信 → サーバ推論 → 注釈フレーム返却
-  - [ ] 送信レート制御（in-flight 1 枚まで）で遅延を抑える
-  - [ ] これにより `streamlit-webrtc` / `av` のオプション依存は**不要化**（`[realtime]` extra の扱いを決める）
-- [ ] 受け入れ基準：`docs/manual/02_realtime.md`
+### R5. リアルタイム（`views/realtime.py` → `RealtimePage.tsx`）✅ 完了
+- [x] 経路1（Continuity Camera）：`GET /api/realtime/mjpeg?...` で `open_camera` → `FrameProcessor.process` → JPEG エンコード → `multipart/x-mixed-replace` 配信。`<img src>` で表示
+  - [x] 開始/停止（配信終了・`POST /stop` でカメラ解放。**多重オープンは 409 で排他**）
+  - [x] `frame_skip` / 解像度プリセット / 軽量モデル自動切替（`recommend_realtime_model`）の再現
+  - [x] FPS・検出数は `GET /api/realtime/stats` を 1 秒ごとにポーリングして表示（`FpsMeter` はサーバ側）
+  - [x] 「バックエンドを動かしている Mac のカメラを使う」という制約表示を維持
+  - [x] フレームが取れなくなったら諦めて解放する（無限ループにしない）
+- [x] 経路2（ブラウザカメラ）：`getUserMedia` → canvas で JPEG 化 → WebSocket 送信 → サーバ推論 → 注釈フレーム返却
+  - [x] 送信レート制御（**応答を受け取ってから次を送る＝in-flight 1 枚**）で遅延を溜めない
+  - [x] Vite の dev プロキシは `ws: true` が必須（無いと WebSocket が中継されない）
+- [x] 受け入れ基準：`docs/manual/02_realtime.md`
+
+> `streamlit-webrtc` / `av`（`[realtime]` extra）は **React 版では不要**。ただし Streamlit 版
+> `app/views/realtime.py` がまだ使っているため、Streamlit を退役させるまでは残す。
 
 ### R6. 仕上げ
 - [ ] `backend/tests/`：各 API のスキーマ・ゾーン JSON パース・パス検証を R1〜R5 の実装に合わせて追加

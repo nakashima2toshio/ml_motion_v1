@@ -1,6 +1,22 @@
 # 📡 リアルタイム画面 操作マニュアル
 
-**画面**: 左ナビ「リアルタイム」（`app/views/realtime.py`）。
+**画面**: 左ナビ「リアルタイム」。
+
+> **UI は 2 種類あります（移行期）。操作手順・結果の見方は同じです。**
+>
+> | UI | 起動 | 実体 |
+> |---|---|---|
+> | React（推奨） | `./run_dev.sh` → http://localhost:5173/realtime | `frontend/src/pages/RealtimePage.tsx` + `backend/app/api/realtime.py` |
+> | Streamlit（従来） | `streamlit run app/Home.py` → http://localhost:8501 | `app/views/realtime.py` |
+>
+> React 版の相違点:
+> - **経路1（Continuity Camera）は「バックエンドを動かしている Mac のカメラ」**を使います。
+>   サーバが推論して MJPEG で配信するため、ブラウザは別マシンでも構いません。
+>   カメラは同時に 1 本しか開けないので、2 本目の配信要求はエラー（409）になります。
+> - **経路2（ブラウザ）は WebSocket** です（`streamlit-webrtc` の置き換え）。
+>   React 版では `streamlit-webrtc` / `av`（`.[realtime]` extra）は不要です。
+>
+> 移行計画は [`docs/react_migration_todo.md`](../react_migration_todo.md)。
 
 ## 目的
 iPhone / Web カメラの映像を**準リアルタイム**に検出（＋追跡）する。2 経路を選べる。
