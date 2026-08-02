@@ -1,6 +1,18 @@
 # 📊 実験管理画面 操作マニュアル
 
-**画面**: 左ナビ「実験管理」（`app/views/experiments.py`）。
+**画面**: 左ナビ「実験管理」。
+
+> **UI は 2 種類あります（移行期）。操作手順・結果の見方は同じです。**
+>
+> | UI | 起動 | 実体 |
+> |---|---|---|
+> | React（推奨） | `./run_dev.sh` → http://localhost:5173/experiments | `frontend/src/pages/ExperimentsPage.tsx` + `backend/app/api/experiments.py` |
+> | Streamlit（従来） | `streamlit run app/Home.py` → http://localhost:8501 | `app/views/experiments.py` |
+>
+> ⚠️ **Run 一覧の mAP 列が 0 になる既知の不具合があります**（移行前から。Streamlit 版も同様）。
+> 原因と対処方針は [`docs/known_issues.md`](../known_issues.md) を参照してください。
+>
+> 移行計画は [`docs/react_migration_todo.md`](../react_migration_todo.md)。
 
 ## 目的
 MLflow の **Run 一覧・メトリクス比較**、**転移学習ジョブの起動**、**data.yaml 生成**、**Model Registry** の確認を行う。

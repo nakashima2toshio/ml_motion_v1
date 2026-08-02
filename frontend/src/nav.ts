@@ -42,7 +42,7 @@ export const PAGES: PageDef[] = [
     icon: '📊',
     streamlitView: 'app/views/experiments.py',
     phase: 'R3',
-    implemented: false,
+    implemented: true,
   },
   {
     path: '/production',
