@@ -26,7 +26,7 @@ export const PAGES: PageDef[] = [
     icon: '🎥',
     streamlitView: 'app/views/analyze.py',
     phase: 'R1',
-    implemented: false,
+    implemented: true,
   },
   {
     path: '/realtime',

@@ -27,10 +27,12 @@ jobs:
       # 単体テストは依存ゼロ層のみ（重い依存 torch/cv2/ultralytics/supervision/mlflow/anthropic は
       # 遅延 import のため不要）。backend/tests は FastAPI の TestClient を使うため
       # fastapi + httpx を足す（いずれも純 Python ホイールで軽い）。
+      # ⚠️ python-multipart は必須。UploadFile を使うルート（/api/analyze/upload）は
+      # **import 時**に例外を投げるため、無いと backend/tests 全体が収集エラーになる。
       # ⚠️ ruff はバージョン固定。未固定だと ruff 側の既定ルール追加（0.16 で RUF022 /
       # PLR1730 / EXE001 / N999 等が既定入り）でコード無変更のまま CI が赤くなる。
       # 更新は「上げる → 出た指摘を直す」を 1 つの PR で行う。
-      - run: pip install ruff==0.15.8 pytest pyyaml fastapi httpx
+      - run: pip install ruff==0.15.8 pytest pyyaml fastapi httpx python-multipart
       - name: Ruff lint
         run: ruff check .
       - name: Compile

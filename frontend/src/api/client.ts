@@ -4,7 +4,7 @@
  * dev は Vite のプロキシで同一オリジンに見えるため、既定のベース URL は空文字。
  * 別ポート/別ホストの API を叩くときだけ `VITE_API_BASE` を設定する。
  */
-import type { DeviceInfo, Health, JobEvent, JobStatus, Options } from '../types';
+import type { DeviceInfo, Health, JobEvent, JobStatus, Options, UploadInfo } from '../types';
 
 export const API_BASE: string = import.meta.env.VITE_API_BASE ?? '';
 
@@ -52,11 +52,31 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
+/** JSON ボディで POST する。 */
+export function postJson<T>(path: string, body: unknown): Promise<T> {
+  return request<T>(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
+
+/** 動画をアップロードする（multipart/form-data）。 */
+export function uploadVideo(file: File): Promise<UploadInfo> {
+  const form = new FormData();
+  form.append('file', file);
+  // Content-Type は boundary 付きでブラウザに決めさせる（自分で指定しない）。
+  return request<UploadInfo>('/api/analyze/upload', { method: 'POST', body: form });
+}
+
 export const getHealth = (): Promise<Health> => request<Health>('/api/health');
 export const getDeviceInfo = (): Promise<DeviceInfo> => request<DeviceInfo>('/api/meta/device');
 export const getOptions = (): Promise<Options> => request<Options>('/api/meta/options');
 export const getJobStatus = <T>(kind: string, jobId: string): Promise<JobStatus<T>> =>
   request<JobStatus<T>>(`/api/${kind}/result/${jobId}`);
+
+/** GET で任意のパスを叩く（画面固有のエンドポイント用）。 */
+export const getJson = <T>(path: string): Promise<T> => request<T>(path);
 
 /** SSE 購読の解除関数。 */
 export type Unsubscribe = () => void;

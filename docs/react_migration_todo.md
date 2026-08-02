@@ -139,18 +139,22 @@ frontend/
 
 > R0 時点では 5 画面すべてがプレースホルダ。**実機能は Streamlit 版（`streamlit run app/Home.py`）が引き続き担当**する。
 
-### R1. 解析画面（`views/analyze.py` → `AnalyzePage.tsx`）— 最重要
-- [ ] `POST /api/analyze/upload`：mp4/mov/avi を一時ディレクトリへ保存し `upload_id` を返す（サイズ上限・拡張子検証）
-- [ ] `POST /api/analyze/run`：`enable_seg` / `enable_track` / `enable_zone` / `model_name` / `conf` / `classes` / `frame_stride` / `trace_length` / `zones` を受け、`process_tracking_video` をジョブ実行
-- [ ] `progress_cb` → SSE `progress {current,total}`、完了時 `done`、例外は `error`（現行のエラーメッセージ文言を踏襲）
-- [ ] `GET /api/analyze/result/{job_id}`：`records`（`to_dict()`）・`summarize()`・`zone_summary`・`per_track_dwell`・`frames_processed/total`
-- [ ] ダウンロード 3 種（`to_csv_bytes` / `to_json_bytes` / 注釈付き mp4）＋ `Content-Disposition` のファイル名を現行と一致させる
-- [ ] 注釈付き動画の Range 対応配信（`StaticFiles` マウント）＋ 再生不可時の DL 誘導キャプション
-- [ ] `POST /api/analyze/summary/{job_id}`：`summarize_session()`（`ANTHROPIC_API_KEY` 未設定時のエラー文言を踏襲）
-- [ ] React 側：設定サイドバー（ラジオ/チェック/セレクト/スライダ/マルチセレクト）— **セグ ON でモデル一覧を `-seg` に切替**、**追跡 OFF でゾーン解析を disabled**、**全クラス ON でクラス選択を disabled** の連動を再現
-- [ ] React 側：ゾーン定義エディタ（JSON テキスト＋クライアント側バリデーション。将来の図形描画は任意）
-- [ ] React 側：メトリクス（総検出数 / ユニークID数 / 処理フレーム）・クラス別表・ゾーン解析表・ID別滞留表・検出結果テーブル（件数が多いので**仮想化 or ページング**を検討）
-- [ ] 受け入れ基準：`docs/manual/01_analyze.md` の「操作手順」「出力・結果の見方」「トラブルシュート」が全て再現できること
+### R1. 解析画面（`views/analyze.py` → `AnalyzePage.tsx`）✅ 完了
+- [x] `POST /api/analyze/upload`：mp4/mov/avi をストリーミング保存し `upload_id` を返す（拡張子・サイズ上限・ファイル名サニタイズ）
+- [x] `POST /api/analyze/run`：`enable_seg` / `enable_track` / `enable_zone` / `model_name` / `conf` / `classes` / `frame_stride` / `trace_length` / `zones` を受け、`process_tracking_video` をジョブ実行
+- [x] `progress_cb` → SSE `progress {current,total}`、完了時 `done`、例外は `error`（現行のエラーメッセージ文言を踏襲）
+- [x] `GET /api/analyze/result/{job_id}`：`summarize()`・`zone_summary`・`per_track_dwell`・`frames_processed/total`（**検出レコードは含めない**）
+- [x] `GET /api/analyze/detections/{job_id}`：検出結果テーブルを 1000 件ずつページング（全件は CSV/JSON へ誘導）
+- [x] ダウンロード 3 種（`to_csv_bytes` / `to_json_bytes` / 注釈付き mp4）＋ `Content-Disposition` のファイル名を現行と一致させる
+- [x] 注釈付き動画の Range 対応配信（`/media/{run_id}/{filename}`）＋ 再生不可時の DL 誘導キャプション
+- [x] `POST /api/analyze/summary/{job_id}`：`summarize_session()`（`ANTHROPIC_API_KEY` 未設定時のエラー文言を踏襲）
+- [x] React 側：設定パネル — **セグ ON でモデル一覧を `-seg` に切替**、**追跡 OFF でゾーン解析を disabled**、**全クラス ON でクラス選択を disabled** の連動を再現（`state/analyzeSettings.ts`）
+- [x] React 側：ゾーン定義エディタ（JSON テキスト＋クライアント側バリデーション）
+- [x] React 側：メトリクス（総検出数 / ユニークID数 / 処理フレーム）・クラス別表・ゾーン解析表・ID別滞留表・検出結果テーブル（ページング）
+- [x] 受け入れ基準：`docs/manual/01_analyze.md` の「操作手順」「出力・結果の見方」を実動画（YOLO11n）で確認
+
+> 検出結果テーブルは既定 1000 件ずつのページング。全件はブラウザを固めるため
+> **CSV / JSON のダウンロードへ誘導**する（`DEFAULT_PAGE_SIZE` / `MAX_PAGE_SIZE`）。
 
 ### R2. アノテーションQA（`views/annotation_qa.py` → `AnnotationQaPage.tsx`）— 最小・先に片付ける
 - [ ] `POST /api/annotation/review`：画像 multipart ＋ `labels[]` → `review_annotation()` の Markdown を返す
