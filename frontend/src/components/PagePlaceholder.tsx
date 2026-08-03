@@ -4,6 +4,8 @@
  * R0 の時点では 5 画面すべてが未実装。移行元の Streamlit ビューと、
  * それまでの使い方（Streamlit 版を起動する）を明示して、迷わないようにする。
  */
+import type { ReactElement } from 'react';
+
 import type { PageDef } from '../nav';
 
 interface Props {
@@ -14,7 +16,7 @@ interface Props {
   manual: string;
 }
 
-export function PagePlaceholder({ page, features, manual }: Props): JSX.Element {
+export function PagePlaceholder({ page, features, manual }: Props): ReactElement {
   return (
     <div className="page">
       <h1 className="page-title">

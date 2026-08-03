@@ -12,6 +12,7 @@
  * 受け入れ基準は `docs/manual/01_analyze.md`。
  */
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import type { ReactElement } from 'react';
 
 import { fetchAnalyzeResult, fetchDetections } from '../api/analyze';
 import { API_BASE, getOptions, postJson, subscribeJob, uploadVideo } from '../api/client';
@@ -33,7 +34,7 @@ import type { AnalyzeResultSummary, DetectionPage, JobAccepted, Options, UploadI
 
 const PAGE_SIZE = 1000;
 
-export function AnalyzePage(): JSX.Element {
+export function AnalyzePage(): ReactElement {
   const [options, setOptions] = useState<Options | null>(null);
   const [optionsError, setOptionsError] = useState<string | null>(null);
   const [settings, setSettings] = useState<AnalyzeSettings>(() => defaultSettings(null));

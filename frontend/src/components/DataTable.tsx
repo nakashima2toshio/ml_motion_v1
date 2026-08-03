@@ -4,11 +4,13 @@
  * 検出結果テーブルは数万行になりうるため、大きいデータは呼び出し側でページング
  * して渡す（全件は CSV/JSON ダウンロードへ誘導する方針）。
  */
+import type { ReactElement, ReactNode } from 'react';
+
 export interface Column<T> {
   key: string;
   label: string;
   /** 省略時は `row[key]` をそのまま表示 */
-  render?: (row: T) => React.ReactNode;
+  render?: (row: T) => ReactNode;
   align?: 'left' | 'right';
 }
 
@@ -23,7 +25,7 @@ export function DataTable<T extends object>({
   columns,
   rows,
   empty = 'データがありません',
-}: Props<T>): JSX.Element {
+}: Props<T>): ReactElement {
   if (rows.length === 0) {
     return <p className="table-empty">{empty}</p>;
   }

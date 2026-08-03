@@ -7,6 +7,8 @@
  *
  * 各画面の中身は R1 以降で実装する（現状はプレースホルダ）。
  */
+import type { ReactElement } from 'react';
+
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 
 import { DeviceBar } from './components/DeviceBar';
@@ -17,7 +19,7 @@ import { ExperimentsPage } from './pages/ExperimentsPage';
 import { ProductionPage } from './pages/ProductionPage';
 import { RealtimePage } from './pages/RealtimePage';
 
-const PAGE_COMPONENTS: Record<string, () => JSX.Element> = {
+const PAGE_COMPONENTS: Record<string, () => ReactElement> = {
   '/analyze': AnalyzePage,
   '/realtime': RealtimePage,
   '/experiments': ExperimentsPage,
@@ -25,7 +27,7 @@ const PAGE_COMPONENTS: Record<string, () => JSX.Element> = {
   '/annotation-qa': AnnotationQaPage,
 };
 
-export function App(): JSX.Element {
+export function App(): ReactElement {
   return (
     <div className="app">
       <aside className="sidebar">

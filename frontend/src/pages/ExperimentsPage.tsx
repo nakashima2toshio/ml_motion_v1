@@ -7,6 +7,7 @@
  * 受け入れ基準は `docs/manual/03_experiments.md`。
  */
 import { useEffect, useRef, useState } from 'react';
+import type { ReactElement } from 'react';
 
 import {
   generateDatasetYaml,
@@ -26,7 +27,7 @@ import {
 } from '../state/experiments';
 import type { DatasetYaml, ExperimentsConfig, Options, RunsResponse, TrainResult } from '../types';
 
-export function ExperimentsPage(): JSX.Element {
+export function ExperimentsPage(): ReactElement {
   const [config, setConfig] = useState<ExperimentsConfig | null>(null);
   const [options, setOptions] = useState<Options | null>(null);
   const [experiment, setExperiment] = useState('');
