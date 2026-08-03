@@ -7,12 +7,13 @@
  * 受け入れ基準は `docs/manual/05_annotation_qa.md`。
  */
 import { useEffect, useState } from 'react';
+import type { ReactElement } from 'react';
 
 import { getOptions, reviewAnnotation } from '../api/client';
 import { Markdown } from '../components/Markdown';
 import type { AnnotationReview, Options } from '../types';
 
-export function AnnotationQaPage(): JSX.Element {
+export function AnnotationQaPage(): ReactElement {
   const [options, setOptions] = useState<Options | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);

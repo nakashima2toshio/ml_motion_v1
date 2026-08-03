@@ -10,6 +10,7 @@
  * 受け入れ基準は `docs/manual/02_realtime.md`。
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ReactElement } from 'react';
 
 import { getOptions } from '../api/client';
 import { getRealtimeSettings, getRealtimeStats, mjpegUrl, stopRealtime, websocketUrl } from '../api/realtime';
@@ -26,7 +27,7 @@ import type { Options, RealtimeMessage, RealtimeSettingsResponse } from '../type
 /** ブラウザ経路で送るフレームの JPEG 品質。 */
 const JPEG_QUALITY = 0.7;
 
-export function RealtimePage(): JSX.Element {
+export function RealtimePage(): ReactElement {
   const [options, setOptions] = useState<Options | null>(null);
   const [settings, setSettings] = useState<RealtimeSettings>(() => defaultRealtimeSettings(null));
   const [resolved, setResolved] = useState<RealtimeSettingsResponse | null>(null);

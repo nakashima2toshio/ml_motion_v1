@@ -10,6 +10,7 @@
  * 受け入れ基準は `docs/manual/04_production.md`。
  */
 import { useEffect, useReducer, useRef, useState } from 'react';
+import type { ReactElement } from 'react';
 
 import { getOptions, subscribeJob } from '../api/client';
 import {
@@ -24,7 +25,7 @@ import { Metric } from '../components/Metric';
 import { initialJobState, jobReducer, progressLabel } from '../state/jobReducer';
 import type { BatchResult, DiscoverResponse, ExportResponse, Options, Quantization } from '../types';
 
-export function ProductionPage(): JSX.Element {
+export function ProductionPage(): ReactElement {
   const [options, setOptions] = useState<Options | null>(null);
 
   const [inputDir, setInputDir] = useState('data/incoming');

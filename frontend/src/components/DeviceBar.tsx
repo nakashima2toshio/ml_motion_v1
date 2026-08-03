@@ -6,11 +6,12 @@
  * バックエンド未起動のときは、その旨と起動コマンドを出す。
  */
 import { useEffect, useState } from 'react';
+import type { ReactElement } from 'react';
 
 import { getDeviceInfo } from '../api/client';
 import type { DeviceInfo } from '../types';
 
-export function DeviceBar(): JSX.Element {
+export function DeviceBar(): ReactElement {
   const [info, setInfo] = useState<DeviceInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
 
