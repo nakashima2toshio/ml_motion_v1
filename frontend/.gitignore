@@ -1,3 +1,6 @@
 node_modules/
 dist/
 *.local
+
+# Vite の依存プリバンドルキャッシュ（dev サーバが生成する一時ファイル）
+.vite/
